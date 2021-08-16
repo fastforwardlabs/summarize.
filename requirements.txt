@@ -1,0 +1,11 @@
+scikit-learn==0.24.4
+spacy==3.1.1
+spacy-transformers==1.0.3
+transformers==4.6.1 #4.92
+torch==1.9.0
+streamlit==0.85.0
+networkx==2.6.2
+pytextrank==3.2.1
+selenium==3.141.0
+wikipedia==1.4.0
+-e .
