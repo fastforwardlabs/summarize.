@@ -95,7 +95,7 @@ def _find_longest_text_single(text: str, original_text: str) -> Optional[str]:
     words = text.split()
     # Generative transformer models have a tendancy to place periods between 
     # sentences with whitespace on each side -- remove these
-    words = [word for word in words if word is not "."]
+    words = [word for word in words if word != "."]
     pairs_of_indices = list(combinations(range(len(words)), 2))
     pairs_of_indices.sort(key= lambda x: x[1]-x[0], reverse=True)
     for pair in pairs_of_indices:
