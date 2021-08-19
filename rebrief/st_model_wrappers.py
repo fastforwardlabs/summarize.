@@ -48,8 +48,6 @@ from rebrief.models import (
 )
 from rebrief.tr_summaries import classic_summary, sentence_summary_upgrade
 
-NUM_SENTENCES = 5
-
 @attr.s()
 class SummarizationModel(object):
     """
