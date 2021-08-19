@@ -29,7 +29,7 @@ def sentence_summary(text:Doc, nlp:Language, **kwargs) -> str:
     """
     doc = nlp(text)
     sent_tr = SentenceTextRank(doc)
-    return sent_tr.generate_summary(transformer_ranks=False, return_scores=False)
+    return sent_tr.generate_summary(transformer_ranks=False, limit_sentences=NUM_SENTENCES)
 
 def sentence_summary_upgrade(text:Doc, nlp:Language, **kwargs) -> str:
     """ Generate a summary with a TextRank model constructed from sentences.
@@ -41,4 +41,4 @@ def sentence_summary_upgrade(text:Doc, nlp:Language, **kwargs) -> str:
     """
     doc = nlp(text)
     sent_tr = SentenceTextRank(doc)
-    return sent_tr.generate_summary(transformer_ranks=True, return_scores=False)
+    return sent_tr.generate_summary(transformer_ranks=True, limit_sentences=NUM_SENTENCES)
