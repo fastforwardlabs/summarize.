@@ -140,4 +140,4 @@ class SentenceTextRank:
         if return_scores:
             return [(s, str(sent)) for s, i, sent in summary]
         else:
-            return "\n".join([str(sent) for s, i, sent in summary])
+            return " ".join([str(sent) for s, i, sent in summary])

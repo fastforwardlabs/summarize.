@@ -3,7 +3,7 @@ from spacy.tokens import Doc
 from spacy import Language 
 from rebrief.models import SentenceTextRank
 
-NUM_SENTENCES = 5
+NUM_SENTENCES = 3
 
 def classic_summary(text:Doc, nlp:Language, **kwargs) -> str:
     """ Generate summary with classic TextRank model. 
@@ -17,7 +17,7 @@ def classic_summary(text:Doc, nlp:Language, **kwargs) -> str:
     summary = []
     for sentence in tr.summary(limit_phrases=10, limit_sentences=NUM_SENTENCES):
         summary.append(str(sentence))
-    return "\n".join(summary)
+    return " ".join(summary)
 
 def sentence_summary(text:Doc, nlp:Language, **kwargs) -> str:
     """ Generate a summary with a TextRank model constructed from sentences.
