@@ -41,12 +41,19 @@
 import attr
 import transformers as trf
 
-from rebrief.models import (
-    build_classic_nlp_pipeline, 
+from rebrief.models.classic_extractive import (
+    SentenceTextRank, 
+    build_classic_nlp_pipeline,
     build_trf_nlp_pipeline, 
-    SentenceTextRank
+    classic_summary, 
+    sentence_summary_upgrade
 )
-from rebrief.tr_summaries import classic_summary, sentence_summary_upgrade
+from rebrief.models.neural_extractive import (
+    SentenceBertClass, 
+    load_neural_extractive_model,
+    summarize
+)
+
 
 @attr.s()
 class SummarizationModel(object):
@@ -110,18 +117,12 @@ abstractive = SummarizationModel(
     description = "(HF Summarization Pipeline)", 
 )
 
-def load_victors_model():
-    return NotImplementedError
-
-def victors_model_summary(text, model):
-    return NotImplementedError
-
 modern_extractive = SummarizationModel(
     name = "modern_extractive",
-    load = load_victors_model,
-    summarize = victors_model_summary,
-    display_name = "Neural Extractive ",
-    description = "### Fine-tuned Universal Sentence Encoder",
+    load = load_neural_extractive_model,
+    summarize = summarize,
+    display_name = "Neural Extractive",
+    description = "### Fine-tuned SOMETHING SOMETHING",
 )
 
 classic_extractive = SummarizationModel(
