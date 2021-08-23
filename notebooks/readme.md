@@ -1,6 +1,6 @@
 ## Extractive Summarization with BERT 
 
-![alt text](../images/inference.png)
+![alt text](images/inference.png)
 
 In extractive summarization, the task is to extract subsets (sentences) from a document that represent a valid summary. 
 In this repo, we treat extractive summarization as a classification problem where we predict a class for each sentence in a document (i.e. belonging to the summary or not). We can then _assemble_ a summary based on these scores e.g. the highest scoring sentences reorded by some pertinent criteria (e.g. order of appearance in document, grammatical correctness, etc).
@@ -11,7 +11,7 @@ In this repo, we treat extractive summarization as a classification problem wher
 
 ### Model Implementation 
 
-![alt text](../images/extractivesummodel.png)
+![alt text](images/extractivesummodel.png)
 
 - We use sentence bert models to get representations for our text. We use the smallest model (sentence-transformers/paraphrase-MiniLM-L3-v2). 
 Note that this can be replaced by a larger more accurate model. See the list of sentence bert pretrained [models](https://www.sbert.net/docs/pretrained_models.html#sentence-embedding-models).
