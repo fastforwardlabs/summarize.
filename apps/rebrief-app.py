@@ -75,7 +75,6 @@ def load_model(model):
 def summarize_text(article, model):
     return model.summarize(article, load_model(model))
 
-@st.cache()
 def make_screenshot(url, output_filename):
     """ Use a headless browser to take a screenshot of the provided url and save to file. """
     chrome_options = Options()  
@@ -91,15 +90,8 @@ def make_screenshot(url, output_filename):
     driver.get(url)
     driver.save_screenshot(output_filename)
     driver.close()
+    return
 
-@st.cache()
-def parse_summary(summary):
-    """ Split a Transformers Pipeline Summary object into snippets. """
-    snippets = re.split('[,.]', summary[0]['summary_text'])
-    snippets = [s.strip() for s in snippets if len(s) > 1]
-    return snippets
-
-@st.cache()
 def make_url(text, url):
     """ Add HTML to convert text into a clickable url. """
     new_text = f'<a target="_blank" href="{url}">{text}</a>'

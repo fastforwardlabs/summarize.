@@ -106,7 +106,7 @@ abstractive = SummarizationModel(
     name = "abstractive",
     load = load_abstractive_model,
     summarize = abstractive_summary,
-    display_name = "Abstractive",
+    display_name = "Neural Abstractive",
     description = "(HF Summarization Pipeline)", 
 )
 
@@ -120,7 +120,7 @@ modern_extractive = SummarizationModel(
     name = "modern_extractive",
     load = load_victors_model,
     summarize = victors_model_summary,
-    display_name = "Modern Extractive ",
+    display_name = "Neural Extractive ",
     description = "### Fine-tuned Universal Sentence Encoder",
 )
 
@@ -133,9 +133,9 @@ classic_extractive = SummarizationModel(
 )
 
 upgraded_classic_extractive = SummarizationModel(
-    name = "upgraded_classic_extractive",
+    name = "hybrid_extractive",
     load = build_trf_nlp_pipeline,
     summarize = sentence_summary_upgrade,
-    display_name = "Upgraded Classic",
+    display_name = "Hybrid Extractive",
     description = " (TextRank + SentenceBERT)",
 )
