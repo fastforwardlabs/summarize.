@@ -47,7 +47,8 @@ import wikipedia as wiki
 import streamlit as st
 st.set_page_config(layout="wide")
 
-from rebrief.utils import match_most_text, highlight_text
+from rebrief.wiki_processing import extract_headings
+from rebrief.highlighting import match_most_text, highlight_text
 from rebrief.st_model_wrappers import (
     abstractive, 
     modern_extractive, 
@@ -99,9 +100,12 @@ def make_url(text, url):
 
 
 # ============ SIDEBAR ============
-st.sidebar.title("Summarization on Wikipedia articles")
-st.sidebar.markdown("Currently using HuggingFace models for Abstractive Summarization. But as you'll see below, \
-    the summaries are often verbatim from the original text (highlighted).")
+st.sidebar.image("images/fflogo1@1x.png")
+st.sidebar.title("ReBrief")
+st.sidebar.markdown("BOILERPLATE TO BE WRITTEN. \
+    * link to original Brief \
+    * link to blog post that I'm gonna write soon \
+    * link to Victor's blog post? Or put that in the model desc. below?")
 
 # ----- Article Selection -----
 articles = {
@@ -124,33 +128,59 @@ model_obj = model_selector[
 st.sidebar.markdown(model_obj.description)
 
 # ============ MAIN PAGE ============
-# load article
-wiki_page = wiki.page(article_selection, auto_suggest=False)
-article = wiki_page.summary
+def do_summary():
+    """ Generate and display article summary. 
 
-# ----- Display Article Title and Image -----
+    Article to summarize is determined by examining Streamlit's session_state. 
+    If a selection has been made from the ToC selectbox, that segment
+    of the article is loaded and summarized. 
+
+    If no selection has yet been made, the wiki "summary" is loaded
+    and summarized (first couple paragraphs of the wiki article).
+    """
+    try:
+        section_selection = st.session_state.section
+        if "--" in section_selection: 
+            section_selection = section_selection.split("--")[1]
+        article = wiki_page.section(section_selection)
+    except:
+        article = wiki_page.summary
+    try:
+        summary = summarize_text(article, model_obj)
+    except:
+        summary = ""
+
+    col1, col2 = st.beta_columns(2)
+
+    col1.subheader('Model Summary')
+    col1.write(f"\n{summary}")
+
+    col2.subheader('Original Text')
+    snippets = match_most_text(summary, article)
+    if snippets:
+        highlighted_article = highlight_text(snippets, article)
+        for paragraph in highlighted_article.split("\n"):
+            col2.write(paragraph, unsafe_allow_html=True)
+    else:
+        col2.write(article)
+
+# ----- Load Stuff -----
+wiki_page = wiki.page(article_selection, auto_suggest=False)
 title_url = make_url(article_selection, wiki_page.url)
 image_name = f"images/{article_selection.replace(' ', '_')}.png"
 screenshot = make_screenshot(wiki_page.url, image_name)
+headings = extract_headings(article_selection)
 
-_, img_col, _ = st.beta_columns(3)
-img_col.markdown(f"### {title_url}", unsafe_allow_html=True)
+# ----- Display Image & ToC -----
+img_col, toc_col = st.beta_columns(2)
+#img_col.markdown(f"### {title_url}", unsafe_allow_html=True)
 img_col.image(image_name)
+toc_col.markdown(f"### Table of Contents")
+section_selection = toc_col.selectbox("Choose a section", headings, key='section')
 
-# ----- Display Summary and original -----
-col1, col2 = st.beta_columns(2)
+# ----- Display Summary and Original Text -----
+do_summary()
 
-# extract answers
-summary = summarize_text(article, model_obj)
 
-col1.subheader('Model Summary')
-col1.write(f"\n{summary}")
 
-col2.subheader('Original Wikipedia article')
-col2.markdown("##### (actually, only the first section which is itself a summary)")
-
-snippets = match_most_text(summary, article)
-highlighted_article = highlight_text(snippets, article)
-for paragraph in highlighted_article.split("\n"):
-    col2.write(paragraph, unsafe_allow_html=True)
 
