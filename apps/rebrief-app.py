@@ -76,6 +76,7 @@ def load_model(model):
 def summarize_text(article, model):
     return model.summarize(article, load_model(model))
 
+@st.cache()
 def make_screenshot(url, output_filename):
     """ Use a headless browser to take a screenshot of the provided url and save to file. """
     chrome_options = Options()  
@@ -98,6 +99,61 @@ def make_url(text, url):
     new_text = f'<a target="_blank" href="{url}">{text}</a>'
     return new_text
 
+def wiki_main_page(article_selection, model_obj):
+    def do_summary():
+        """ Generate and display wiki article summary. 
+
+        Article to summarize is determined by examining Streamlit's session_state. 
+        If a selection has been made from the ToC selectbox, that segment
+        of the article is loaded and summarized. 
+
+        If no selection has yet been made, the wiki "summary" is loaded
+        and summarized (first couple paragraphs of the wiki article).
+        """
+        try:
+            section_selection = st.session_state.section
+            if "--" in section_selection: 
+                section_selection = section_selection.split("-- ")[1]
+            article = wiki_page.section(section_selection)
+        except:
+            article = wiki_page.summary
+
+        summary = ""
+        if article.strip():
+            summary = summarize_text(article, model_obj)
+
+        col1, col2 = st.beta_columns(2)
+        col1.subheader('Model Summary')
+        col1.write(f"\n{summary}")
+
+        col2.subheader('Original Text')
+        snippets = match_most_text(summary, article)
+        if snippets:
+            highlighted_article = highlight_text(snippets, article)
+            for paragraph in highlighted_article.split("\n"):
+                col2.write(paragraph, unsafe_allow_html=True)
+        else:
+            col2.write(article)
+
+    # ----- Load Stuff -----
+    wiki_page = wiki.page(article_selection, auto_suggest=False)
+    title_url = make_url(article_selection, wiki_page.url)
+    image_name = f"images/{article_selection.replace(' ', '_')}.png"
+    screenshot = make_screenshot(wiki_page.url, image_name)
+    headings = extract_headings(article_selection)
+
+    # ----- Display Image & ToC -----
+    img_col, toc_col = st.beta_columns(2)
+    #img_col.markdown(f"### {title_url}", unsafe_allow_html=True)
+    img_col.image(image_name)
+    toc_col.markdown(f"### Table of Contents")
+    section_selection = toc_col.selectbox("Choose a section", headings, key='section')
+
+    # ----- Display Summary and Original Text -----
+    do_summary()
+
+def cnndm_main_page(article_selection, model_obj):
+    st.write("NotImplementedError")
 
 # ============ SIDEBAR ============
 st.sidebar.image("images/fflogo1@1x.png")
@@ -107,79 +163,39 @@ st.sidebar.markdown("BOILERPLATE TO BE WRITTEN. \
     * link to blog post that I'm gonna write soon \
     * link to Victor's blog post? Or put that in the model desc. below?")
 
-# ----- Article Selection -----
-articles = {
-    "Machine learning": wiki.search("machine learning", results=1),
-    "Birds": wiki.search("birds", results=1),
-    "Knitting": wiki.search("knitting", results=1),
-    "Baking": wiki.search("baking", results=1),
-    "Jeopardy!": wiki.search("jeopardy", results=1),
-} 
 st.sidebar.markdown("### Select Things.")
-article_selection = st.sidebar.selectbox("Choose one of my hobbies to summarize", list(articles.keys()))
+
+# ----- Dataset Selection -----
+#dataset_selection = st.sidebar.radio("Choose a dataset", ['Wikipedia', 'CNN/DailyMail'])
+dataset_selection = "Wikipedia"
+
+if dataset_selection == "Wikipedia":
+    # ----- Article Selection -----
+    articles = {
+        "Machine learning": wiki.search("machine learning", results=1),
+        "Birds": wiki.search("birds", results=1),
+        "Knitting": wiki.search("knitting", results=1),
+        "Baking": wiki.search("baking", results=1),
+        "Jeopardy!": wiki.search("jeopardy", results=1),
+    } 
+    article_selection = st.sidebar.selectbox("Choose one of my hobbies to summarize", list(articles.keys()))
+
+if dataset_selection == "CNN/DailyMail":
+    article_selection = st.sidebar.selectbox("Choose an article:", ["thing", "another thing", "I'm feeling lucky"])
 
 # ----- Model Selection -----
 model_selector = {m.display_name: m for m in MODELS}
 model_obj = model_selector[
     st.sidebar.selectbox("Choose a summarization model:", list(model_selector.keys()))
     ]
-
-# ----- Model Description -----
 st.sidebar.markdown(model_obj.description)
 
 # ============ MAIN PAGE ============
-def do_summary():
-    """ Generate and display article summary. 
+if dataset_selection == "Wikipedia":
+    wiki_main_page(article_selection, model_obj)
+elif dataset_selection == "CNN/DailyMail":
+    cnndm_main_page(article_selection, model_obj)
 
-    Article to summarize is determined by examining Streamlit's session_state. 
-    If a selection has been made from the ToC selectbox, that segment
-    of the article is loaded and summarized. 
-
-    If no selection has yet been made, the wiki "summary" is loaded
-    and summarized (first couple paragraphs of the wiki article).
-    """
-    try:
-        section_selection = st.session_state.section
-        if "--" in section_selection: 
-            section_selection = section_selection.split("--")[1]
-        article = wiki_page.section(section_selection)
-    except:
-        article = wiki_page.summary
-    try:
-        summary = summarize_text(article, model_obj)
-    except:
-        summary = ""
-
-    col1, col2 = st.beta_columns(2)
-
-    col1.subheader('Model Summary')
-    col1.write(f"\n{summary}")
-
-    col2.subheader('Original Text')
-    snippets = match_most_text(summary, article)
-    if snippets:
-        highlighted_article = highlight_text(snippets, article)
-        for paragraph in highlighted_article.split("\n"):
-            col2.write(paragraph, unsafe_allow_html=True)
-    else:
-        col2.write(article)
-
-# ----- Load Stuff -----
-wiki_page = wiki.page(article_selection, auto_suggest=False)
-title_url = make_url(article_selection, wiki_page.url)
-image_name = f"images/{article_selection.replace(' ', '_')}.png"
-screenshot = make_screenshot(wiki_page.url, image_name)
-headings = extract_headings(article_selection)
-
-# ----- Display Image & ToC -----
-img_col, toc_col = st.beta_columns(2)
-#img_col.markdown(f"### {title_url}", unsafe_allow_html=True)
-img_col.image(image_name)
-toc_col.markdown(f"### Table of Contents")
-section_selection = toc_col.selectbox("Choose a section", headings, key='section')
-
-# ----- Display Summary and Original Text -----
-do_summary()
 
 
 
