@@ -92,12 +92,19 @@ def make_screenshot(url, output_filename):
     driver.get(url)
     driver.save_screenshot(output_filename)
     driver.close()
-    return
+
+def update_screenshot(original_url, headings, image_name):
+    section = st.session_state.section
+    new_url = original_url+"#"+section.strip("-- ").replace(" ", "_")
+    make_screenshot(new_url, image_name)
 
 def make_url(text, url):
     """ Add HTML to convert text into a clickable url. """
     new_text = f'<a target="_blank" href="{url}">{text}</a>'
     return new_text
+
+def clean_cache():
+    del st.session_state["section"]
 
 def wiki_main_page(article_selection, model_obj):
     def do_summary():
@@ -110,6 +117,8 @@ def wiki_main_page(article_selection, model_obj):
         If no selection has yet been made, the wiki "summary" is loaded
         and summarized (first couple paragraphs of the wiki article).
         """
+        st.write(article_selection)
+        st.write(st.session_state)
         try:
             section_selection = st.session_state.section
             if "--" in section_selection: 
@@ -117,8 +126,8 @@ def wiki_main_page(article_selection, model_obj):
             article = wiki_page.section(section_selection)
         except:
             article = wiki_page.summary
-
         summary = ""
+        st.write(article)
         if article.strip():
             summary = summarize_text(article, model_obj)
 
@@ -142,15 +151,23 @@ def wiki_main_page(article_selection, model_obj):
     screenshot = make_screenshot(wiki_page.url, image_name)
     headings = extract_headings(article_selection)
 
-    # ----- Display Image & ToC -----
-    img_col, toc_col = st.beta_columns(2)
-    #img_col.markdown(f"### {title_url}", unsafe_allow_html=True)
-    img_col.image(image_name)
-    toc_col.markdown(f"### Table of Contents")
-    section_selection = toc_col.selectbox("Choose a section", headings, key='section')
+    placeholder = st.empty()
 
     # ----- Display Summary and Original Text -----
     do_summary()
+
+    # ----- Display Image & ToC -----
+    img_col, toc_col = placeholder.beta_columns(2)
+    #img_col.markdown(f"### {title_url}", unsafe_allow_html=True)
+    img_col.image(image_name)
+    toc_col.markdown(f"### Table of Contents")
+    section_selection = toc_col.selectbox(
+        "Choose a section", headings,
+        key='section', 
+        on_change=update_screenshot, 
+        args=[wiki_page.url, headings, image_name]
+        )
+
 
 def cnndm_main_page(article_selection, model_obj):
     st.write("NotImplementedError")
@@ -178,7 +195,7 @@ if dataset_selection == "Wikipedia":
         "Baking": wiki.search("baking", results=1),
         "Jeopardy!": wiki.search("jeopardy", results=1),
     } 
-    article_selection = st.sidebar.selectbox("Choose one of my hobbies to summarize", list(articles.keys()))
+    article_selection = st.sidebar.selectbox("Choose one of my hobbies to summarize", list(articles.keys()), on_change=clean_cache)
 
 if dataset_selection == "CNN/DailyMail":
     article_selection = st.sidebar.selectbox("Choose an article:", ["thing", "another thing", "I'm feeling lucky"])
