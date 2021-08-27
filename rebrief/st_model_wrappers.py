@@ -41,12 +41,19 @@
 import attr
 import transformers as trf
 
-from rebrief.models import (
-    build_classic_nlp_pipeline, 
+from rebrief.models.classic_extractive import (
+    SentenceTextRank, 
+    build_classic_nlp_pipeline,
     build_trf_nlp_pipeline, 
-    SentenceTextRank
+    classic_summary, 
+    sentence_summary_upgrade
 )
-from rebrief.tr_summaries import classic_summary, sentence_summary_upgrade
+from rebrief.models.neural_extractive import (
+    SentenceBertClass, 
+    load_neural_extractive_model,
+    summarize
+)
+
 
 @attr.s()
 class SummarizationModel(object):
@@ -106,22 +113,21 @@ abstractive = SummarizationModel(
     name = "abstractive",
     load = load_abstractive_model,
     summarize = abstractive_summary,
-    display_name = "Abstractive",
-    description = "(HF Summarization Pipeline)", 
+    display_name = "Neural Abstractive",
+    description = """### HF Summarization Pipeline \n
+    I don't know what model this is. Pegasus? Or T5? Or is Pegasus a variant of T5?
+    # TODO: read about this! 
+    """, 
 )
-
-def load_victors_model():
-    return NotImplementedError
-
-def victors_model_summary(text, model):
-    return NotImplementedError
 
 modern_extractive = SummarizationModel(
     name = "modern_extractive",
-    load = load_victors_model,
-    summarize = victors_model_summary,
-    display_name = "Modern Extractive ",
-    description = "### Fine-tuned Universal Sentence Encoder",
+    load = load_neural_extractive_model,
+    summarize = summarize,
+    display_name = "Neural Extractive",
+    description = """### SentenceBERT fine-tuned for summarization\n 
+    
+    """,
 )
 
 classic_extractive = SummarizationModel(
@@ -129,13 +135,37 @@ classic_extractive = SummarizationModel(
     load = build_classic_nlp_pipeline,
     summarize = classic_summary,
     display_name = "Classic Extractive",
-    description = "(TextRank)",
+    description = "### TextRank \n TextRank is a graph-based ranking algorithm, \
+    which provides a way of determining the importance of a vertex within a graph, \
+    given global information drawn recursively from the entire graph.\
+    \n The basic idea behind textrank is that of 'voting' -- \
+    when one vertex is linked to another, it's essentially voting for that other vertext. \
+    The more votes a vertext has, the more important it is. Additionally, a vertex's importance \
+    influences how important its vote is!  So a vertex's score is determined not only by the \
+    number of votes it receives from other vertices, but also their importance scores. \
+    \n While the vertexes can represent anything, in this classic version they are \
+    instantiated by the words found in the text (after removing stop words). \
+    The edges between the vertices (the 'votes') are initialized as the co-occurrence \
+    between two words within a given context window size. After initialization, \
+    the PageRank algorithm (of search engine fame) computes the recursive scoring. \
+    These scores are used to determine the most important words and phrases in the text \
+    and sentences containing the top phrases are extracted as a summary.",
 )
 
 upgraded_classic_extractive = SummarizationModel(
-    name = "upgraded_classic_extractive",
+    name = "hybrid_extractive",
     load = build_trf_nlp_pipeline,
     summarize = sentence_summary_upgrade,
-    display_name = "Upgraded Classic",
-    description = " (TextRank + SentenceBERT)",
+    display_name = "Hybrid Extractive",
+    description = """ ### TextRank + SentenceBERT\n
+    This hybrid approach uses the basic tenents of the Classic Extractive model but with a twist.
+    \n
+    We still use TextRank to build a graph. But instead of words, 
+    each vertex represents a full sentence in the document. 
+    The edges are initialized as the cosine similarity between two sentence
+    representations after processing through SentenceBERT.  
+    Once initalized, the PageRank algorithm is run to determine the final 
+    score of each sentence in the document and the sentences with the highest
+    scores are selected as the document summary.
+    """,
 )
