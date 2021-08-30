@@ -117,8 +117,6 @@ def wiki_main_page(article_selection, model_obj):
         If no selection has yet been made, the wiki "summary" is loaded
         and summarized (first couple paragraphs of the wiki article).
         """
-        st.write(article_selection)
-        st.write(st.session_state)
         try:
             section_selection = st.session_state.section
             if "--" in section_selection: 
@@ -127,7 +125,6 @@ def wiki_main_page(article_selection, model_obj):
         except:
             article = wiki_page.summary
         summary = ""
-        st.write(article)
         if article.strip():
             summary = summarize_text(article, model_obj)
 
@@ -175,10 +172,10 @@ def cnndm_main_page(article_selection, model_obj):
 # ============ SIDEBAR ============
 st.sidebar.image("images/fflogo1@1x.png")
 st.sidebar.title("ReBrief")
-st.sidebar.markdown("BOILERPLATE TO BE WRITTEN. \
-    * link to original Brief \
-    * link to blog post that I'm gonna write soon \
-    * link to Victor's blog post? Or put that in the model desc. below?")
+st.sidebar.markdown(" **link to original Brief?** \n \
+    ReBrief is a summarization prototype that demonstrates both abstractive and extractive summarization approaches. \
+    ReBrief includes both neural network-based models (Transformers), as well as classic and hybrid models. \
+    Details can be found below after selecting a model, as well as in the accompanying [blog post](TODO: LINK).")
 
 st.sidebar.markdown("### Select Things.")
 
@@ -205,7 +202,7 @@ model_selector = {m.display_name: m for m in MODELS}
 model_obj = model_selector[
     st.sidebar.selectbox("Choose a summarization model:", list(model_selector.keys()))
     ]
-st.sidebar.markdown(model_obj.description)
+st.sidebar.markdown(model_obj.description, unsafe_allow_html=True)
 
 # ============ MAIN PAGE ============
 if dataset_selection == "Wikipedia":
