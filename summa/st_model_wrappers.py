@@ -41,14 +41,14 @@
 import attr
 import transformers as trf
 
-from rebrief.models.classic_extractive import (
+from summa.models.classic_extractive import (
     SentenceTextRank, 
     build_classic_nlp_pipeline,
     build_trf_nlp_pipeline, 
     classic_summary, 
     sentence_summary_upgrade
 )
-from rebrief.models.neural_extractive import (
+from summa.models.neural_extractive import (
     SentenceBertClass, 
     load_neural_extractive_model,
     summarize

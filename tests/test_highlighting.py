@@ -40,7 +40,7 @@
 
 import unittest
 
-from rebrief import highlighting
+from summa import highlighting
 
 
 class TestMatchMostText(unittest.TestCase):

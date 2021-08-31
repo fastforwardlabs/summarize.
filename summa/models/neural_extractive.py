@@ -6,7 +6,7 @@ import spacy
 import torch
 from transformers import AutoModel, AutoTokenizer
 
-from rebrief.utils import absolute_pathname
+from summa.utils import absolute_pathname
 
 BASE_MODEL_NAME = "sentence-transformers/paraphrase-MiniLM-L3-v2"
 MODEL_PATH = absolute_pathname("models/minilm_bal_exsum.pth")

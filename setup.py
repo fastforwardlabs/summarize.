@@ -41,8 +41,8 @@
 from setuptools import setup
 
 setup(
-    name="rebrief",
+    name="summa",
     version="0.0.1",
-    description=""" Models and utilities for the ReBrief AMP. """,
-    author="Melanie Beck",
+    description=""" Models and utilities for the Summarize. AMP. """,
+    author="Melanie Beck & Victor Dibia",
 )
