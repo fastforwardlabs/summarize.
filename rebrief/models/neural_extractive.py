@@ -89,7 +89,7 @@ def summarize(text, model, limit_sentences=NUM_SENTENCES, batch_size=BATCH_SIZE,
     try:
         doc_inputs = get_model_inputs([text], tokenizer)
     except IndexError:
-        return "Text too short probably." 
+        return "Text too long probably." 
     doc = nlp(text)
     doc_sentences = [str(sent) for sent in doc.sents if len(sent) > MIN_SENTENCE_LENGTH]
     

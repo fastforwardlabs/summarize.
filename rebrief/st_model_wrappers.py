@@ -140,17 +140,17 @@ abstractive = SummarizationModel(
     load = load_abstractive_model,
     summarize = abstractive_summary,
     display_name = "Neural Abstractive",
-    description = "### HuggingFace Summarization Pipeline \n HuggingFace \
-    provide models that perform _abstractive_ document summarization. \
-    These models ingest a document and then generate text word by word \
+    description = "HuggingFace Summarization Pipeline.\n\n HuggingFace \
+    provide models that perform _abstractive_ summarization. \
+    These models ingest a document and generate text word by word \
     (or token by token) until a summary of a desired length is achieved. \
     \n\n While these models currently represent the state-of-the-art in text \
-    summarization, they do have some drawbacks. Namely, as Transformers, these\
+    summarization, they have some drawbacks. Namely, as Transformers, these\
     models are limited in the amount of text they can process at one time. \
     Secondly, Transformers are typically more computationally demanding than \
     traditional models. And finally, any model that generates text word by word \
     can occasionally produce inaccurate or factually incorrect summaries. \
-    \n\n This HF summization pipeline loads a distilBART model -- a \"distilled\" \
+    \n\n This HF summarization pipeline loads a distilBART model -- a \"distilled\" \
     version of Facebook's BART model -- which is 25% more computationally efficient \
     than the original while matching the larger model's accuracy. It is trained\
     on the CNN/Daily Mail dataset, a standard for summarization tasks.", 
@@ -161,7 +161,7 @@ modern_extractive = SummarizationModel(
     load = load_neural_extractive_model,
     summarize = summarize,
     display_name = "Neural Extractive",
-    description = "### Fine-tuning SentenceBERT \n For this model \
+    description = "Fine-tuning SentenceBERT.\n\n For this model \
     we train a Transformer to perform _extractive_ rather than _abstractive_ summarization. \
     While the details of the approach can be found in our blog post, [Extractive \
     Summarization with SentenceBERT](TODO: LINK), here's the gist. \
@@ -182,19 +182,19 @@ classic_extractive = SummarizationModel(
     load = build_classic_nlp_pipeline,
     summarize = classic_summary,
     display_name = "Classic Extractive",
-    description = "### TextRank \n TextRank is a classic graph-based ranking \
+    description = "TextRank.\n\n TextRank is a classic graph-based ranking \
     algorithm that computes the importance of a vertex given global information \
     about the entire graph. \
     \n\n The basic idea is that of \"voting\": when one vertex is linked to another, \
-    it's essentially casting a vote for that other vertex. The more votes a vertext \
+    it's essentially casting a vote for that other vertex. The more votes a vertex \
     has, the more important it is. Additionally, a vote from an important vertex \
-    counts for more than one from a less important vertex. \
-    So a vertex's score is determined not only by the number of votes it receives \
+    counts for more than one from a less important vertex. Ultimately, a vertex's \
+    score is determined not only by the number of votes it receives \
     but also by the importances of the vertices casting the votes. \
     \n\n While the vertices in the graph can represent anything, in this classic \
     version each vertex represents a word from the document (after removing stop words). \
     The edges between the vertices (the \"votes\") are initialized as the co-occurrence \
-    between two words within a given context window size. After initialization, \
+    between those words within a given context window size. After initialization, \
     the PageRank algorithm (of search engine fame) computes the recursive scoring. \
     These scores are used to determine the most important words and phrases in the document, \
     and sentences containing the top phrases are extracted as a summary.",
@@ -205,12 +205,12 @@ upgraded_classic_extractive = SummarizationModel(
     load = build_trf_nlp_pipeline,
     summarize = sentence_summary_upgrade,
     display_name = "Hybrid Extractive",
-    description = " ### TextRank + SentenceBERT \n This hybrid approach relies on the \
-    same basic tenents of the `Classic Extractive` model but with a twist.\
+    description = "TextRank + SentenceBERT.\n\n This hybrid approach relies on the \
+    same basic tenents of the \"Classic Extractive\" model but with a twist.\
     \n\n We still use TextRank to build a graph, but now each vertex represents a sentence \
-    from the document, rather than a word. A numerical representation of each sentence is \
+    from the document, rather than a single word. A numerical representation of each sentence is \
     computed via the SentenceBERT Transformer model. The edges of the graph are then initialized \
-    as the cosine similarity between two sentence representations. \
+    as the cosine similarity between each pair of sentence representations. \
     The PageRank algorithm computes the final importance scores for each sentence in the \
     document. Sentences with the highest scores are selected as the document summary.",
 )

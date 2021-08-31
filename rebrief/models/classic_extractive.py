@@ -103,13 +103,17 @@ class SentenceTextRank:
 
     def trfembeddings_textrank(self):
         sentence_vectors = self.get_transformer_embeddings()
-        if sentence_vectors:
+        try:
             return self._sentence_rank(np.array(sentence_vectors.cpu()))  
-        return None
+        except (ValueError, AttributeError):
+            return None
 
     def wordembeddings_textrank(self):
         sentence_vectors = self.get_sentence_embeddings()
-        return self._sentence_rank(sentence_vectors)
+        try:
+            return self._sentence_rank(sentence_vectors)
+        except ValueError:
+            return None
 
     def get_transformer_embeddings(self):
         try:
