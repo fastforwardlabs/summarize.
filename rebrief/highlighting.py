@@ -272,6 +272,8 @@ def _subtract_ranges(minuend: List[Range], subtrahend: Range) -> List[Range]:
 
 def match_most_text(text: str, original_text: str) -> List[str]:
     """ Finds longest consecutive segments in "text" that also occur in "original_text". """
+    if not text:
+        return []
     summary = HighlightedDocument.from_text(text)
     original = HighlightedDocument.from_text(original_text)
 
