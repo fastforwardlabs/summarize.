@@ -38,9 +38,6 @@
 #
 # ###########################################################################
 
-import re
-from dataclasses import dataclass
-
 from selenium import webdriver  
 from selenium.webdriver.chrome.options import Options
 import wikipedia as wiki
@@ -129,17 +126,17 @@ def wiki_main_page(article_selection, model_obj):
             summary = summarize_text(article, model_obj)
 
         col1, col2 = st.beta_columns(2)
-        col1.subheader('Model Summary')
-        col1.write(f"\n{summary}")
+        col2.subheader('Model Summary')
+        col2.write(f"\n{summary}")
 
-        col2.subheader('Original Text')
+        col1.subheader('Original Text')
         snippets = match_most_text(summary, article)
         if snippets:
             highlighted_article = highlight_text(snippets, article)
             for paragraph in highlighted_article.split("\n"):
-                col2.write(paragraph, unsafe_allow_html=True)
+                col1.write(paragraph, unsafe_allow_html=True)
         else:
-            col2.write(article)
+            col1.write(article)
 
     # ----- Load Stuff -----
     wiki_page = wiki.page(article_selection, auto_suggest=False)
@@ -154,7 +151,7 @@ def wiki_main_page(article_selection, model_obj):
     do_summary()
 
     # ----- Display Image & ToC -----
-    img_col, toc_col = placeholder.beta_columns(2)
+    toc_col, img_col = placeholder.beta_columns(2)
     #img_col.markdown(f"### {title_url}", unsafe_allow_html=True)
     img_col.image(image_name)
     toc_col.markdown(f"### Table of Contents")

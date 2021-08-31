@@ -86,26 +86,32 @@ def batch_predict(sentence_inputs, document_inputs, model):
     return model(sent_token_ids, doc_token_ids, sent_attn_mask, doc_attn_mask)
 
 def summarize(text, model, limit_sentences=NUM_SENTENCES, batch_size=BATCH_SIZE, return_scores=False):
+    try:
+        doc_inputs = get_model_inputs([text], tokenizer)
+    except IndexError:
+        return "Text too short probably." 
     doc = nlp(text)
-    doc_inputs = get_model_inputs([text], tokenizer)
     doc_sentences = [str(sent) for sent in doc.sents if len(sent) > MIN_SENTENCE_LENGTH]
+    
+    if doc_sentences:
+        scores = []
+        for i in range(int(len(doc_sentences) / batch_size) + 1):
+            sentence_batch = doc_sentences[i*batch_size: (i+1) * batch_size]  
+            if sentence_batch:
+                sentence_inputs = get_model_inputs(sentence_batch, tokenizer)
+                preds = batch_predict(sentence_inputs, doc_inputs, model)
+                scores = scores + preds.tolist()
 
-    scores = []
-    for i in range(int(len(doc_sentences) / batch_size) + 1):
-        sentence_batch = doc_sentences[i*batch_size: (i+1) * batch_size]        
-        sentence_inputs = get_model_inputs(sentence_batch, tokenizer)
-        preds = batch_predict(sentence_inputs, doc_inputs, model)
-        scores = scores + preds.tolist()
+        sent_pred_list = [{"sentence": doc_sentences[i], "score": scores[i][0], "index":i} for i in range(len(doc_sentences))]
+        sorted_sentences = sorted(sent_pred_list, key=lambda k: k['score'], reverse=True) 
 
-    sent_pred_list = [{"sentence": doc_sentences[i], "score": scores[i][0], "index":i} for i in range(len(doc_sentences))]
-    sorted_sentences = sorted(sent_pred_list, key=lambda k: k['score'], reverse=True) 
+        sorted_result = sorted_sentences[:NUM_SENTENCES] 
+        sorted_result = sorted(sorted_result, key=lambda k: k['index']) 
 
-    sorted_result = sorted_sentences[:NUM_SENTENCES] 
-    sorted_result = sorted(sorted_result, key=lambda k: k['index']) 
+        summary = [ x["sentence"] for x in sorted_result]
+        summary = " ".join(summary)
 
-    summary = [ x["sentence"] for x in sorted_result]
-    summary = " ".join(summary)
-
-    if return_scores:
-        return summary, scores
-    return summary
+        if return_scores:
+            return summary, scores
+        return summary
+    return None

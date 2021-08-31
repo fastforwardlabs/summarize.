@@ -103,17 +103,23 @@ class SentenceTextRank:
 
     def trfembeddings_textrank(self):
         sentence_vectors = self.get_transformer_embeddings()
-        return self._sentence_rank(np.array(sentence_vectors.cpu()))  
+        if sentence_vectors:
+            return self._sentence_rank(np.array(sentence_vectors.cpu()))  
+        return None
 
     def wordembeddings_textrank(self):
         sentence_vectors = self.get_sentence_embeddings()
         return self._sentence_rank(sentence_vectors)
 
     def get_transformer_embeddings(self):
-        # This does take attention into account and it makes a big difference!
-        token_embeddings = torch.tensor(self.doc._.trf_data.tensors[0])
-        attn_mask = self.doc._.trf_data.tokens['attention_mask']
-        return self._mean_pooling(token_embeddings, attn_mask)
+        try:
+            token_embeddings = torch.tensor(self.doc._.trf_data.tensors[0])
+        except IndexError:
+            # tokens may not exist if document is empty
+            return None
+        else:
+            attn_mask = self.doc._.trf_data.tokens['attention_mask']
+            return self._mean_pooling(token_embeddings, attn_mask)
 
     def get_sentence_embeddings(self):
         try:
@@ -133,16 +139,18 @@ class SentenceTextRank:
             scores = self.transformer_ranks
         else:
             scores = self.wordembedding_ranks
-        # order by rank
-        ranked_sentences = sorted(((scores[i], i, s) for i, s in enumerate(self.sentences)), reverse=True)
-        summary = ranked_sentences[:limit_sentences]
-        if preserve_order: 
-            # rerank by index in the doc
-            summary = sorted(summary, key=lambda x: x[1])
-        if return_scores:
-            return [(s, str(sent)) for s, i, sent in summary]
-        else:
-            return " ".join([str(sent) for s, i, sent in summary])
+        if scores:
+            # order by rank
+            ranked_sentences = sorted(((scores[i], i, s) for i, s in enumerate(self.sentences)), reverse=True)
+            summary = ranked_sentences[:limit_sentences]
+            if preserve_order: 
+                # rerank by index in the doc
+                summary = sorted(summary, key=lambda x: x[1])
+            if return_scores:
+                return [(s, str(sent)) for s, i, sent in summary]
+            else:
+                return " ".join([str(sent) for s, i, sent in summary])
+        return None 
 
 def classic_summary(text:str, nlp:Language, **kwargs) -> str:
     """ Generate summary with classic TextRank model. 
