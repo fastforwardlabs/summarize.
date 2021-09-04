@@ -124,20 +124,21 @@ else:
 text = top_right.text_area("Subection text -- or enter your own text to summarize!", article, height=350)
 
 # ----- Summarize Text -----
-summary = summarize_text(text, model_obj)
+all_text = summarize_text(text, model_obj)
 
 # ----- Display Highlighting & Results -----
 bottom_left, bottom_right = st.beta_columns(2)
 bottom_left.markdown(f"## Original text: {section_selection} \n (Highlighted segments denote model's summary.)")
 
 # ----- Highlighting -----
-snippets = match_most_text(summary, text)
-if snippets:
-    highlighted_article = highlight_text(snippets, text)
-    for paragraph in highlighted_article.split("\n"):
-        bottom_left.write(paragraph, unsafe_allow_html=True)
-else:
-    bottom_left.write(text)
+for s in all_text.texts:
+    if not s.summary:
+        break
+    snippets = match_most_text(s.summary, s.text)
+    s.text = highlight_text(snippets, s.text)
+
+for paragraph in str(all_text).split("\n"):
+    bottom_left.write(paragraph, unsafe_allow_html=True)
 
 # ----- Results -----
 bottom_right.markdown(f"## {model_obj.display_name} Summary")

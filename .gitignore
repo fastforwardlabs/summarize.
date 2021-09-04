@@ -142,3 +142,6 @@ cython_debug/
 
 # Working directories
 output/
+
+# Temp file for local testing
+delete_me.py
