@@ -38,9 +38,12 @@
 #
 # ###########################################################################
 
+from typing import List
+
 import attr
 import transformers as trf
 
+from summa.highlighting import highlight_text
 from summa.models.classic_extractive import (
     SentenceTextRank, 
     build_classic_nlp_pipeline,
@@ -53,10 +56,18 @@ from summa.models.neural_extractive import (
     load_neural_extractive_model,
     summarize
 )
+from summa.shared_types import (
+    TextChunk,
+    TextFull,
+    wrap_text_in_chunks,
+    wrap_summary
+)
 
 # this is the current default when loading the HF summarization pipeline
 # making it explicit here to reduce ambiguity.
 ABSUM_MODEL = "sshleifer/distilbart-cnn-12-6" 
+
+
 
 @attr.s()
 class SummarizationModel(object):
@@ -108,32 +119,36 @@ class SummarizationModel(object):
 def load_abstractive_model(model_name = ABSUM_MODEL):
     return trf.pipeline("summarization", model=model_name, tokenizer=model_name)
 
-def abstractive_summary(text, model):
+def abstractive_summary(text, model) -> TextFull:
     try:
         output = model(text, return_tensors=False, clean_up_tokenization_spaces=True)
         summary = output[0]['summary_text']
+        return wrap_text_in_chunks(text, summary)
     except IndexError:
         # the input text is too long. Need to break it up. 
-        paragraphs = text.split("\n")
-        paragraphs = [p for p in paragraphs if p]
-        summary = []
-        for paragraph in paragraphs:
-            try:
-                output = model(paragraph, return_tensors=False, clean_up_tokenization_spaces=True)
-                summary.append(output[0]['summary_text'])
-            except IndexError:
-                # if a paragraph is STILL too long, split further
-                sentences = paragraph.split(".") 
-                # TODO: need to generalize this because these chunks might be too long
-                chunks = 2 
-                segment_size = int(len(sentences)/chunks)
-                while sentences:
-                    segment = ". ".join(sentences[:segment_size])
-                    sentences = sentences[segment_size:]
-                    output = model(segment, return_tensors=False, clean_up_tokenization_spaces=True)
-                    summary.append(output[0]['summary_text'])
-        summary = "\n".join(summary)
-    return summary
+        pass
+
+    paragraphs = text.split("\n")
+    paragraphs = [p for p in paragraphs if p]
+    chunks = []
+    for paragraph in paragraphs:
+        try:
+            output = model(paragraph, return_tensors=False, clean_up_tokenization_spaces=True)
+            new_summary = output[0]['summary_text']
+            chunks.append(TextChunk(text=paragraph, summary=new_summary, ws="\n"))
+        except IndexError:
+            # if a paragraph is STILL too long, split further
+            sentences = paragraph.split(".") 
+            # TODO: need to generalize this because these chunks might be too long
+            num_chunks = 2 
+            segment_size = int(len(sentences)/num_chunks)
+            while sentences:
+                segment = ". ".join(sentences[:segment_size])
+                sentences = sentences[segment_size:]
+                output = model(segment, return_tensors=False, clean_up_tokenization_spaces=True)
+                new_summary = output[0]['summary_text']
+                chunks.append(TextChunk(text=segment, summary=new_summary, ws=(". " if sentences else "\n")))
+    return TextFull(texts=chunks)
 
 abstractive = SummarizationModel(
     name = "abstractive",
@@ -159,7 +174,7 @@ abstractive = SummarizationModel(
 modern_extractive = SummarizationModel(
     name = "modern_extractive",
     load = load_neural_extractive_model,
-    summarize = summarize,
+    summarize = wrap_summary(summarize),
     display_name = "Neural Extractive",
     description = "Fine-tuning SentenceBERT.\n\n For this model \
     we train a Transformer to perform _extractive_ rather than _abstractive_ summarization. \
@@ -180,7 +195,7 @@ modern_extractive = SummarizationModel(
 classic_extractive = SummarizationModel(
     name = "classic_extractive",
     load = build_classic_nlp_pipeline,
-    summarize = classic_summary,
+    summarize = wrap_summary(classic_summary),
     display_name = "Classic Extractive",
     description = "TextRank.\n\n TextRank is a classic graph-based ranking \
     algorithm that computes the importance of a vertex given global information \
@@ -203,7 +218,7 @@ classic_extractive = SummarizationModel(
 upgraded_classic_extractive = SummarizationModel(
     name = "hybrid_extractive",
     load = build_trf_nlp_pipeline,
-    summarize = sentence_summary_upgrade,
+    summarize = wrap_summary(sentence_summary_upgrade),
     display_name = "Hybrid Extractive",
     description = "TextRank + SentenceBERT.\n\n This hybrid approach relies on the \
     same basic tenents of the \"Classic Extractive\" model but with a twist.\
