@@ -44,9 +44,9 @@ import wikipedia as wiki
 import streamlit as st
 st.set_page_config(layout="wide")
 
-from rebrief.wiki_processing import extract_headings
-from rebrief.highlighting import match_most_text, highlight_text
-from rebrief.st_model_wrappers import (
+from summa.wiki_processing import extract_headings
+from summa.highlighting import match_most_text, highlight_text
+from summa.st_model_wrappers import (
     abstractive, 
     modern_extractive, 
     classic_extractive, 

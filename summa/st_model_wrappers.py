@@ -206,7 +206,7 @@ upgraded_classic_extractive = SummarizationModel(
     summarize = sentence_summary_upgrade,
     display_name = "Hybrid Extractive",
     description = "TextRank + SentenceBERT.\n\n This hybrid approach relies on the \
-    same basic tenents of the \"Classic Extractive\" model but with a twist.\
+    same basic tenets of the \"Classic Extractive\" model but with a twist.\
     \n\n We still use TextRank to build a graph, but now each vertex represents a sentence \
     from the document, rather than a single word. A numerical representation of each sentence is \
     computed via the SentenceBERT Transformer model. The edges of the graph are then initialized \
