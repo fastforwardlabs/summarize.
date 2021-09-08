@@ -30,9 +30,9 @@ This script facilitates the automated project setup on CML and is triggered by t
 summa
 ├── models
 │   ├── classic_extractive.py
+│   ├── neural_abstractive.py
 │   └── neural_extractive.py
 ├── highlighting.py
-├── st_model_wrappers.py
 ├── text_cleanup.py
 ├── wiki_processing.py
 └── utils.py
