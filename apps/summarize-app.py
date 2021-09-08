@@ -46,11 +46,12 @@ st.set_page_config(layout="wide")
 
 from summa.wiki_processing import extract_headings
 from summa.highlighting import match_most_text, highlight_text
+from summa.text_cleanup import cleanup
 from summa.st_model_wrappers import (
     abstractive, 
     modern_extractive, 
     classic_extractive, 
-    upgraded_classic_extractive
+    hybrid_extractive
 )
 
 CHROMEDRIVER_PATH = '/Users/mbeck/Projects/chromedriver'
@@ -60,7 +61,7 @@ MODELS = (
     abstractive,
     modern_extractive,
     classic_extractive,
-    upgraded_classic_extractive
+    hybrid_extractive
 )
 
 # Global versions for caching
@@ -122,6 +123,7 @@ else:
     article = wiki_page.section(section_selection).strip()
 
 text = top_right.text_area("Subection text -- or enter your own text to summarize!", article, height=350)
+text = cleanup(text)
 
 # ----- Summarize Text -----
 summary = summarize_text(text, model_obj)
