@@ -43,5 +43,12 @@
 Covered cases are shown in the test file.
 """
 
+import re
+
+
 def cleanup(txt: str) -> str:
-    raise NotImplementedError
+    supported_punctuation = ".,!?"
+    for c in supported_punctuation:
+        txt = txt.replace(f" {c} ", f"{c} ")
+    # Put a little space in.
+    return re.sub(r'(['+supported_punctuation+r'])([A-Z])', r'\1 \2', txt)

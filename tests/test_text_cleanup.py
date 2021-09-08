@@ -68,6 +68,16 @@ class TestMatchMostText(unittest.TestCase):
         expected_text = ALICE_TEXT
         self.assertEqual(text_cleanup.cleanup(raw_text), expected_text)
 
+    def test_fix_missing_space_exclamation(self):
+        exclaimative = ALICE_TEXT.replace(
+            "anything had happened.)", "anything had happened!"
+        )
+        raw_text = exclaimative.replace(
+            "anything had happened! So she", "anything had happened!So she"
+        )
+        expected_text = exclaimative
+        self.assertEqual(text_cleanup.cleanup(raw_text), expected_text)
+
     def test_fix_extra_space_period(self):
         raw_text = ALICE_TEXT.replace(
             "French lesson-book. The Mouse", "French lesson-book . The Mouse"
