@@ -42,7 +42,6 @@ from typing import List
 
 import attr
 
-from summa.highlighting import highlight_text
 from summa.models import neural_extractive as ne
 from summa.models import neural_abstractive as na
 from summa.models import classic_extractive as ce
@@ -164,7 +163,7 @@ classic_extractive = SummarizationModel(
 hybrid_extractive = SummarizationModel(
     name = "hybrid_extractive",
     load = ce.build_trf_nlp_pipeline,
-    summarize = wrap_summary(ce.sentence_summary_upgrade),\
+    summarize = wrap_summary(ce.sentence_summary),
     display_name = "Hybrid Extractive",
     description = "TextRank + SentenceBERT.\n\n This hybrid approach relies on the \
     same basic tenets of the \"Classic Extractive\" model but with a twist.\
