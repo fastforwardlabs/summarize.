@@ -38,11 +38,16 @@
 #
 # ###########################################################################
 
+from typing import List
+
 import attr
 
+from summa.highlighting import highlight_text
 from summa.models import neural_extractive as ne
 from summa.models import neural_abstractive as na
 from summa.models import classic_extractive as ce
+from summa.shared_types import wrap_summary
+
 
 @attr.s()
 class SummarizationModel(object):
@@ -90,6 +95,7 @@ class SummarizationModel(object):
     def __hash__(self):
         return self.name
 
+
 abstractive = SummarizationModel(
     name = "abstractive",
     load = na.load_abstractive_model,
@@ -114,7 +120,7 @@ abstractive = SummarizationModel(
 modern_extractive = SummarizationModel(
     name = "modern_extractive",
     load = ne.load_neural_extractive_model,
-    summarize = ne.summarize,
+    summarize = wrap_summary(ne.summarize),
     display_name = "Neural Extractive",
     description = "Fine-tuning SentenceBERT.\n\n For this model \
     we train a Transformer to perform _extractive_ rather than _abstractive_ summarization. \
@@ -135,7 +141,7 @@ modern_extractive = SummarizationModel(
 classic_extractive = SummarizationModel(
     name = "classic_extractive",
     load = ce.build_classic_nlp_pipeline,
-    summarize = ce.classic_summary,
+    summarize = wrap_summary(ce.classic_summary),
     display_name = "Classic Extractive",
     description = "TextRank.\n\n TextRank is a classic graph-based ranking \
     algorithm that computes the importance of a vertex given global information \
@@ -158,7 +164,7 @@ classic_extractive = SummarizationModel(
 hybrid_extractive = SummarizationModel(
     name = "hybrid_extractive",
     load = ce.build_trf_nlp_pipeline,
-    summarize = ce.sentence_summary_trf,
+    summarize = wrap_summary(ce.sentence_summary_upgrade),\
     display_name = "Hybrid Extractive",
     description = "TextRank + SentenceBERT.\n\n This hybrid approach relies on the \
     same basic tenets of the \"Classic Extractive\" model but with a twist.\

@@ -49,6 +49,7 @@ To install dependencies, first create and activate a new virtual environment thr
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+python -m spacy download en_core_web_sm
 ```
 In CML or CDSW, no virtual env is necessary. Instead, inside a Python 3 session (with at least 2 vCPU / 4 GiB Memory), simply run
 ```
@@ -70,4 +71,3 @@ There are three ways to launch this project on CML:
 * **From Prototype Catalog** - Navigate to the Prototype Catalog on a CML workspace, select the "Automated Text Summarization" tile, click "Launch as Project", click "Configure Project"
 * **As ML Prototype** - In a CML workspace, click "New Project", add a Project Name, select "ML Prototype" as the Initial Setup option, copy in the [repo URL](LINK), click "Create Project", click "Configure Project"
 * **Manual Setup** - In a CML workspace, click "New Project", add a Project Name, select "Git" as the Initial Setup option, copy in the [repo URL](LINK), click "Create Project". Then, follow the installation instructions above.
-

@@ -40,6 +40,12 @@
 
 import transformers as trf
 
+from summa.shared_types import (
+    TextChunk,
+    TextFull,
+    wrap_text_in_chunks
+)
+
 # this is the current default when loading the HF summarization pipeline
 # making it explicit here to reduce ambiguity.
 ABSUM_MODEL = "sshleifer/distilbart-cnn-12-6" 
@@ -47,29 +53,33 @@ ABSUM_MODEL = "sshleifer/distilbart-cnn-12-6"
 def load_abstractive_model(model_name = ABSUM_MODEL):
     return trf.pipeline("summarization", model=model_name, tokenizer=model_name)
 
-def abstractive_summary(text, model):
+def abstractive_summary(text, model) -> TextFull:
     try:
         output = model(text, return_tensors=False, clean_up_tokenization_spaces=True)
         summary = output[0]['summary_text']
+        return wrap_text_in_chunks(text, summary)
     except IndexError:
         # the input text is too long. Need to break it up. 
-        paragraphs = text.split("\n")
-        paragraphs = [p for p in paragraphs if p]
-        summary = []
-        for paragraph in paragraphs:
-            try:
-                output = model(paragraph, return_tensors=False, clean_up_tokenization_spaces=True)
-                summary.append(output[0]['summary_text'])
-            except IndexError:
-                # if a paragraph is STILL too long, split further
-                sentences = paragraph.split(".") 
-                # TODO: need to generalize this because these chunks might be too long
-                chunks = 2 
-                segment_size = int(len(sentences)/chunks)
-                while sentences:
-                    segment = ". ".join(sentences[:segment_size])
-                    sentences = sentences[segment_size:]
-                    output = model(segment, return_tensors=False, clean_up_tokenization_spaces=True)
-                    summary.append(output[0]['summary_text'])
-        summary = "\n".join(summary)
-    return summary
+        pass
+
+    paragraphs = text.split("\n")
+    paragraphs = [p for p in paragraphs if p]
+    chunks = []
+    for paragraph in paragraphs:
+        try:
+            output = model(paragraph, return_tensors=False, clean_up_tokenization_spaces=True)
+            new_summary = output[0]['summary_text']
+            chunks.append(TextChunk(text=paragraph, summary=new_summary, ws="\n"))
+        except IndexError:
+            # if a paragraph is STILL too long, split further
+            sentences = paragraph.split(".") 
+            # TODO: need to generalize this because these chunks might be too long
+            num_chunks = 2 
+            segment_size = int(len(sentences)/num_chunks)
+            while sentences:
+                segment = ". ".join(sentences[:segment_size])
+                sentences = sentences[segment_size:]
+                output = model(segment, return_tensors=False, clean_up_tokenization_spaces=True)
+                new_summary = output[0]['summary_text']
+                chunks.append(TextChunk(text=segment, summary=new_summary, ws=(". " if sentences else "\n")))
+    return TextFull(texts=chunks)
