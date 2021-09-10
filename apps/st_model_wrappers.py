@@ -91,7 +91,7 @@ class SummarizationModel(object):
         return self.name
 
 abstractive = SummarizationModel(
-    name = "abstractive",
+    name = "neural_abstractive",
     load = na.load_abstractive_model,
     summarize = na.abstractive_summary,
     display_name = "Neural Abstractive",
@@ -102,7 +102,7 @@ abstractive = SummarizationModel(
 )
 
 modern_extractive = SummarizationModel(
-    name = "modern_extractive",
+    name = "neural_extractive",
     load = ne.load_neural_extractive_model,
     summarize = ne.summarize,
     display_name = "Neural Extractive",

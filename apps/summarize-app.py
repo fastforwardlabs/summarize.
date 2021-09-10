@@ -71,6 +71,13 @@ def load_model(model):
 def summarize_text(article, model):
     return model.summarize(article, load_model(model))
 
+@st.cache(allow_output_mutation=True)
+def load_data(selection):
+    if selection == "wiki":
+        return pd.read_csv("data/wikipedia/ml_excerpts.pd")
+    elif selection == "cnn":
+        return pd.read_csv("data/cnn_dailymail/sAMPle.pd")
+
 def make_url(text, url):
     """ Add HTML to convert text into a clickable url. """
     new_text = f'<a target="_blank" href="{url}">{text}</a>'
@@ -119,31 +126,27 @@ text_selection = text_options[text_selection]
 
 # ----- Load Stuff -----
 if text_selection == "wiki":
-    wikidf = pd.read_csv("data/wikipedia/ml_excerpts.pd")
-    wiki_page = wiki.page("Machine learning", auto_suggest=False)
-    headings = ["Front Matter"] + extract_headings("Machine learning")
+    df = load_data(text_selection)
+    text_options = {r.heading: i for i, r in df.iterrows()}
     top_left.subheader("Table of Contents")
-    section_selection = top_left.selectbox("Choose a subsection.", headings)
-
-    if "--" in section_selection: 
-        section_selection = section_selection.split("-- ")[1]
-    if section_selection == "Front Matter":
-        article = wiki_page.summary 
-    else:
-        article = wiki_page.section(section_selection).strip()
+    selection = top_left.selectbox("Choose a subsection.", list(text_options.keys()))
 else:
-    cnndf = pd.read_csv("data/cnn_dailymail/sAMPle.pd")
-    news_articles = {r.title: i for i, r in cnndf.iterrows()}
-    article_selection = top_left.selectbox("Choose a news article.", list(news_articles.keys()))  
-    row_idx = news_articles[article_selection]
-    article = cnndf.iloc[row_idx]['article']
+    df = load_data(text_selection)
+    text_options = {r.title: i for i, r in df.iterrows()}
+    selection = top_left.selectbox("Choose a news article.", list(text_options.keys()))  
+
+row_idx = text_options[selection]
+article = df.iloc[row_idx]['article']
 
 original = cleanup(article)
 text = top_right.text_area("Subection text -- or enter your own text to summarize!", article, height=300)
 text = cleanup(text)
 
-# ----- Summarize Text -----
-summary = summarize_text(text, model_obj)
+if text == original:
+    summary = df.iloc[row_idx][model_obj.name+"_summary"]
+else:
+    # ----- Summarize Text -----
+    summary = summarize_text(text, model_obj)
 
 # ----- Display Highlighting & Results -----
 bottom_left, bottom_right = st.columns(2)
@@ -168,7 +171,7 @@ if text == original:
             st.write("Because the CNN/Daily Mail dataset includes gold standard summaries, \
                 we can do a quantitative comparison with our model output. The standard approach \
                 is to compute the ROUGE score between the model's output and the gold standard.")
-            st.pyplot(make_bar_chart(cnndf, row_idx, model_obj.display_name))
+            st.pyplot(make_bar_chart(df, row_idx, model_obj.display_name))
             st.write("There are several flavors of ROUGE score. ROUGE-L considers the longest common subsequence in the summary. ")
         if text_selection == "wiki":
             st.write("Interesting things about these Wiki excerpts.")
