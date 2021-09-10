@@ -63,6 +63,7 @@ def abstractive_summary(text, model):
             except IndexError:
                 # if a paragraph is STILL too long, split further
                 sentences = paragraph.split(".") 
+                sentences = [s for s in sentences if s]
                 # TODO: need to generalize this because these chunks might be too long
                 chunks = 2 
                 segment_size = int(len(sentences)/chunks)

@@ -96,19 +96,9 @@ abstractive = SummarizationModel(
     summarize = na.abstractive_summary,
     display_name = "Neural Abstractive",
     description = "HuggingFace Summarization Pipeline.\n\n HuggingFace \
-    provide models that perform _abstractive_ summarization. \
+    provide Transformer models that perform _abstractive_ summarization. \
     These models ingest a document and generate text word by word \
-    (or token by token) until a summary of a desired length is achieved. \
-    \n\n While these models currently represent the state-of-the-art in text \
-    summarization, they have some drawbacks. Namely, as Transformers, these\
-    models are limited in the amount of text they can process at one time. \
-    Secondly, Transformers are typically more computationally demanding than \
-    traditional models. And finally, any model that generates text word by word \
-    can occasionally produce inaccurate or factually incorrect summaries. \
-    \n\n This HF summarization pipeline loads a distilBART model -- a \"distilled\" \
-    version of Facebook's BART model -- which is 25% more computationally efficient \
-    than the original while matching the larger model's accuracy. It is trained\
-    on the CNN/Daily Mail dataset, a standard for summarization tasks.", 
+    (or token by token) until a summary of a desired length is achieved.", 
 )
 
 modern_extractive = SummarizationModel(
@@ -116,20 +106,14 @@ modern_extractive = SummarizationModel(
     load = ne.load_neural_extractive_model,
     summarize = ne.summarize,
     display_name = "Neural Extractive",
-    description = "Fine-tuning SentenceBERT.\n\n For this model \
-    we train a Transformer to perform _extractive_ rather than _abstractive_ summarization. \
-    While the details of the approach can be found in our blog post, [Extractive \
-    Summarization with SentenceBERT](TODO: LINK), here's the gist. \
-    \n\n The CNN/Daily Mail dataset includes news articles as well as human-generated\
-    \"highlights\", which provide an article summary. We identify the sentences in the \
-    article that most closely match those from the highlights and assign them the label \
-    \"In Summary\"; all other sentences from the article are assigned a label of \"Not in Summary\". \
-    For each news article in the training set we compute a full article representation, \
-    as well as individual sentence representations with SentenceBERT. \
-    We pass these representations to a dense layer and train/fine-tune SentenceBERT using the \
-    binary labels we extracted. This results in a model that, at inference time, computes \
-    a score for each sentence in a document. Those with the highest scores are extracted as \
-    the document summary.",
+    description = "Fine-tuning SentenceBERT.\n\n Here we have a  \
+    Transformer that performs _extractive_ summarization. \
+    Specifically, a SentenceBERT model is fine-tuned to identify which \
+    sentences in the article _should_ be included in the summary from \
+    those that _should not._  At inference time, the model assigns each \
+    sentence a score and we select the top three as the article summary. \
+    \n\n Details on the training process can be found in our blog post, [Extractive \
+    Summarization with SentenceBERT](TODO: LINK).",
 )
 
 classic_extractive = SummarizationModel(
@@ -137,22 +121,17 @@ classic_extractive = SummarizationModel(
     load = ce.build_classic_nlp_pipeline,
     summarize = ce.classic_summary,
     display_name = "Classic Extractive",
-    description = "TextRank.\n\n TextRank is a classic graph-based ranking \
-    algorithm that computes the importance of a vertex given global information \
-    about the entire graph. \
-    \n\n The basic idea is that of \"voting\": when one vertex is linked to another, \
-    it's essentially casting a vote for that other vertex. The more votes a vertex \
-    has, the more important it is. Additionally, a vote from an important vertex \
-    counts for more than one from a less important vertex. Ultimately, a vertex's \
-    score is determined not only by the number of votes it receives \
-    but also by the importances of the vertices casting the votes. \
-    \n\n While the vertices in the graph can represent anything, in this classic \
-    version each vertex represents a word from the document (after removing stop words). \
-    The edges between the vertices (the \"votes\") are initialized as the co-occurrence \
-    between those words within a given context window size. After initialization, \
-    the PageRank algorithm (of search engine fame) computes the recursive scoring. \
-    These scores are used to determine the most important words and phrases in the document, \
-    and sentences containing the top phrases are extracted as a summary.",
+    description = "TextRank is a classic graph-based ranking \
+    algorithm that computes the importance of each vertex given global information \
+    about the entire graph.  The basic idea is that of \"voting\": when two vertices \
+    are linked, they \"vote\" for each other, and votes from important vertices \
+    (those with many votes) count for even more. \
+    \n\n In this classic version, each vertex represents a word from the document. \
+    The edges between the vertices (the \"votes\") are the co-occurrence of those words \
+    within a given context window size. After the graph is constructed, the PageRank \
+    algorithm (of search engine fame) computes the recursive scoring. These scores are \
+    used to determine the most important words and phrases in the document; and sentences \
+    containing the top phrases are extracted as a summary.",
 )
 
 hybrid_extractive = SummarizationModel(
@@ -160,12 +139,10 @@ hybrid_extractive = SummarizationModel(
     load = ce.build_trf_nlp_pipeline,
     summarize = ce.sentence_summary_trf,
     display_name = "Hybrid Extractive",
-    description = "TextRank + SentenceBERT.\n\n This hybrid approach relies on the \
-    same basic tenets of the \"Classic Extractive\" model but with a twist.\
-    \n\n We still use TextRank to build a graph, but now each vertex represents a sentence \
-    from the document, rather than a single word. A numerical representation of each sentence is \
-    computed via the SentenceBERT Transformer model. The edges of the graph are then initialized \
-    as the cosine similarity between each pair of sentence representations. \
-    The PageRank algorithm computes the final importance scores for each sentence in the \
-    document. Sentences with the highest scores are selected as the document summary.",
+    description = "TextRank + SentenceBERT.\n\n We still use TextRank to build a graph, \
+    but now each vertex represents a sentence from the document, rather than a single word. \
+    We obtain an embedding of each sentence with a SentenceBERT Transformer model. \
+    The edges of the graph are the cosine similarity between each pair of sentence representations. \
+    The PageRank algorithm computes the final importance scores for each sentence. \
+    Sentences with the highest scores are selected as the document summary.",
 )

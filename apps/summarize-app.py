@@ -38,24 +38,21 @@
 #
 # ###########################################################################
 
-from selenium import webdriver  
-from selenium.webdriver.chrome.options import Options
+import matplotlib.pyplot as plt
+import pandas as pd
 import wikipedia as wiki
 import streamlit as st
 st.set_page_config(layout="wide")
 
-from summa.wiki_processing import extract_headings
+from summa.wiki_parsing import extract_headings, cleanup
 from summa.highlighting import match_most_text, highlight_text
-from summa.text_cleanup import cleanup
-from summa.st_model_wrappers import (
+
+from st_model_wrappers import (
     abstractive, 
     modern_extractive, 
     classic_extractive, 
     hybrid_extractive
 )
-
-CHROMEDRIVER_PATH = '/Users/mbeck/Projects/chromedriver'
-SCREENSHOT_WINDOW_SIZE = "1500,900" 
 
 MODELS = (
     abstractive,
@@ -79,6 +76,19 @@ def make_url(text, url):
     new_text = f'<a target="_blank" href="{url}">{text}</a>'
     return new_text
 
+def make_bar_chart(df, idx, model_name):
+    labels = ['Neural Abstractive', 'Neural Extractive', 'Classic Extractive', 'Hybrid Extractive']
+    values = df[labels].iloc[idx].values
+    to_highlight = labels.index(model_name)
+
+    fig, ax = plt.subplots()
+    ax.bar([0,1,2,3], height = values)
+    ax.bar([to_highlight], height = values[to_highlight], color="orange")
+    ax.set_xticks([0,1,2,3])
+    ax.set_xticklabels(labels, rotation=45)
+    ax.set_ylabel('ROUGE-L score')
+    return fig
+
 # ============ SIDEBAR ============
 st.sidebar.image("images/fflogo1@1x.png")
 st.sidebar.markdown("**Summarize.** is a text summarization prototype that demonstrates \
@@ -96,7 +106,7 @@ st.sidebar.markdown(model_obj.description, unsafe_allow_html=True)
 # ============ MAIN PAGE ============
 
 # ----- Display ToC and Text Box -----
-top_left, top_right = st.beta_columns(2)
+top_left, top_right = st.columns(2)
 top_left.title("Summarize.")
 
 # ----- Article Selection -----
@@ -107,30 +117,44 @@ articles = {
     "Baking": wiki.search("baking", results=1),
     "Jeopardy!": wiki.search("jeopardy", results=1),
 } 
-article_selection = top_left.selectbox("Choose a Wikipedia ariticle.", list(articles.keys()))
+#article_selection = top_left.selectbox("Choose a Wikipedia ariticle.", list(articles.keys()))
+text_options = {
+    'Excerpts from Wikipedia page on Machine Learning': "wiki",
+    'Articles from the CNN/Daily News dataset': "cnn",
+}
+text_selection = top_left.selectbox("Choose a passage to summarize.", list(text_options.keys()))
+text_selection = text_options[text_selection]
 
 # ----- Load Stuff -----
-wiki_page = wiki.page(article_selection, auto_suggest=False)
-headings = ["Front Matter"] + extract_headings(article_selection)
-top_left.subheader("Table of Contents")
-section_selection = top_left.selectbox("Choose a subsection.", headings)
+if text_selection == "wiki":
+    wiki_page = wiki.page("Machine learning", auto_suggest=False)
+    headings = ["Front Matter"] + extract_headings("Machine learning")
+    top_left.subheader("Table of Contents")
+    section_selection = top_left.selectbox("Choose a subsection.", headings)
 
-if "--" in section_selection: 
-    section_selection = section_selection.split("-- ")[1]
-if section_selection == "Front Matter":
-    article = wiki_page.summary 
+    if "--" in section_selection: 
+        section_selection = section_selection.split("-- ")[1]
+    if section_selection == "Front Matter":
+        article = wiki_page.summary 
+    else:
+        article = wiki_page.section(section_selection).strip()
 else:
-    article = wiki_page.section(section_selection).strip()
+    cnndf = pd.read_csv("data/cnn_dailymail/sAMPle.pd")
+    news_articles = {r.title: i for i, r in cnndf.iterrows()}
+    article_selection = top_left.selectbox("Choose a news article.", list(news_articles.keys()))  
+    row_idx = news_articles[article_selection]
+    article = cnndf.iloc[row_idx]['article']
 
-text = top_right.text_area("Subection text -- or enter your own text to summarize!", article, height=350)
+original = cleanup(article)
+text = top_right.text_area("Subection text -- or enter your own text to summarize!", article, height=300)
 text = cleanup(text)
 
 # ----- Summarize Text -----
 summary = summarize_text(text, model_obj)
 
 # ----- Display Highlighting & Results -----
-bottom_left, bottom_right = st.beta_columns(2)
-bottom_left.markdown(f"## Original text: {section_selection} \n (Highlighted segments denote model's summary.)")
+bottom_left, bottom_right = st.columns(2)
+bottom_left.markdown(f"## Original text (summary highlighted)")
 
 # ----- Highlighting -----
 snippets = match_most_text(summary, text)
@@ -145,3 +169,13 @@ else:
 bottom_right.markdown(f"## {model_obj.display_name} Summary")
 bottom_right.write(f"\n{summary}")
 
+if text == original:
+    with bottom_right.expander('Dig Deeper'):
+        if text_selection == "cnn":
+            st.write("Because the CNN/Daily Mail dataset includes gold standard summaries, \
+                we can do a quantitative comparison with our model output. The standard approach \
+                is to compute the ROUGE score between the model's output and the gold standard.")
+            st.pyplot(make_bar_chart(cnndf, row_idx, model_obj.display_name))
+            st.write("There are several flavors of ROUGE score. ROUGE-L considers the longest common subsequence in the summary. ")
+        if text_selection == "wiki":
+            st.write("Interesting things about these Wiki excerpts.")
