@@ -109,15 +109,7 @@ st.sidebar.markdown(model_obj.description, unsafe_allow_html=True)
 top_left, top_right = st.columns(2)
 top_left.title("Summarize.")
 
-# ----- Article Selection -----
-articles = {
-    "Machine learning": wiki.search("machine learning", results=1),
-    "Birds": wiki.search("birds", results=1),
-    "Knitting": wiki.search("knitting", results=1),
-    "Baking": wiki.search("baking", results=1),
-    "Jeopardy!": wiki.search("jeopardy", results=1),
-} 
-#article_selection = top_left.selectbox("Choose a Wikipedia ariticle.", list(articles.keys()))
+# ----- Text Selection -----
 text_options = {
     'Excerpts from Wikipedia page on Machine Learning': "wiki",
     'Articles from the CNN/Daily News dataset': "cnn",
@@ -127,6 +119,7 @@ text_selection = text_options[text_selection]
 
 # ----- Load Stuff -----
 if text_selection == "wiki":
+    wikidf = pd.read_csv("data/wikipedia/ml_excerpts.pd")
     wiki_page = wiki.page("Machine learning", auto_suggest=False)
     headings = ["Front Matter"] + extract_headings("Machine learning")
     top_left.subheader("Table of Contents")
