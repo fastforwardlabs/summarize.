@@ -1,10 +1,15 @@
-name: ReBrief
-description: Extractive and abstractive document summarization
+name: Summarize.
+description: Extractive and abstractive automatic document summarization.
 author: Cloudera Inc.
 specification_version: 1.0
 prototype_version: 1.0
 date: "2021-09-10"
 api_version: 1
+
+runtimes:
+  - editor: Workbench
+    kernel: Python 3.8
+    edition: Standard
 
 tasks:
   - type: create_job
@@ -14,7 +19,7 @@ tasks:
     arguments: None
     short_summary: Create job to install dependencies.
     cpu: 2
-    memory: 8
+    memory: 4
     environment:
       TASK_TYPE: CREATE/RUN_JOB
     kernel: python3
@@ -24,12 +29,12 @@ tasks:
     short_summary: Running install dependencies job. 
 
   - type: start_application
-    short_summary: Starting ReBrief application 
-    name: ReBrief
-    subdomain: rebrief
-    script: apps/launch_rebrief.py
+    short_summary: Starting Summarize. application 
+    name: Summarize.
+    subdomain: summa
+    script: apps/launch-summarize-app.py
     environment_variables:
       TASK_TYPE: START_APPLICATION
     kernel: python3
     cpu: 2
-    memory: 8
+    memory: 4
