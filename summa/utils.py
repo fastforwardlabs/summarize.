@@ -41,11 +41,13 @@
 import os
 import pathlib
 
+
 def create_path(pathname: str) -> None:
     """Creates the directory for the given path if it doesn't already exist."""
     dir = str(pathlib.Path(pathname).parent)
     if not os.path.exists(dir):
         os.makedirs(dir)
+
 
 def absolute_pathname(*paths) -> str:
     """Given a path relative to this project's top-level directory, returns the

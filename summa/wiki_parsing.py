@@ -55,32 +55,41 @@ So both packages are used to extract section titles and their respective text!
 It ain't pretty but it works. 
 """
 
-WIKIAPI = wikiapi.Wikipedia(language='en', extract_format=wikiapi.ExtractFormat.HTML)
-EXCLUDE = ['Journals', 'Conferences', 'See also', 'References', "Further reading", 'External links']
+WIKIAPI = wikiapi.Wikipedia(language="en", extract_format=wikiapi.ExtractFormat.HTML)
+EXCLUDE = [
+    "Journals",
+    "Conferences",
+    "See also",
+    "References",
+    "Further reading",
+    "External links",
+]
+
 
 def extract_headings(article_title):
-    """ Extract the main headings and subheadings from a Wikipedia page. 
+    """Extract the main headings and subheadings from a Wikipedia page.
 
     Only returns top and second level headings (deeper subsections are ignored).
     Returned headings are indented according to their hierarchical level for
-    display in the Streamlit dropdown box. 
+    display in the Streamlit dropdown box.
     """
     p_html = WIKIAPI.page(article_title).text
     headings = []
     soup = BeautifulSoup(p_html, features="html.parser")
     for header in soup.find_all(re.compile("h[2-3]")):
-        if header.text not in EXCLUDE: 
+        if header.text not in EXCLUDE:
             prefix = "-- " if header.name == "h3" else ""
             headings.append(prefix + header.text)
     return headings
 
+
 def cleanup(txt: str) -> str:
     """Contains a function to cleanup text following wiki parsing.
 
-        Covered cases are shown in the test file.
+    Covered cases are shown in the test file.
     """
     supported_punctuation = ".,!?"
     for c in supported_punctuation:
         txt = txt.replace(f" {c} ", f"{c} ")
     # Put a little space in.
-    return re.sub(r'(['+supported_punctuation+r'])([A-Z])', r'\1 \2', txt)
+    return re.sub(r"([" + supported_punctuation + r"])([A-Z])", r"\1 \2", txt)

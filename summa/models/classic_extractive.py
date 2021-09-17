@@ -42,7 +42,7 @@ import typing
 import networkx as nx
 from sklearn.metrics.pairwise import cosine_similarity
 import spacy
-from spacy.tokens import Doc 
+from spacy.tokens import Doc
 from spacy import Language
 import pytextrank
 import torch
@@ -51,21 +51,21 @@ import numpy as np
 NUM_SENTENCES = 3
 
 # better sentencebert model
-SBERT_MODEL_NAME = 'sentence-transformers/paraphrase-mpnet-base-v2'
+SBERT_MODEL_NAME = "sentence-transformers/paraphrase-mpnet-base-v2"
 SBERT_CONFIG = {
     "model": {
         "@architectures": "spacy-transformers.TransformerModel.v1",
         "name": SBERT_MODEL_NAME,
-        "get_spans": {
-            "@span_getters": "spacy-transformers.sent_spans.v1"
-        }
+        "get_spans": {"@span_getters": "spacy-transformers.sent_spans.v1"},
     }
 }
 
+
 def build_classic_nlp_pipeline():
     nlp = spacy.load("en_core_web_sm")
-    nlp.add_pipe("textrank", config={ "token_lookback": 10 })
+    nlp.add_pipe("textrank", config={"token_lookback": 10})
     return nlp
+
 
 def build_trf_nlp_pipeline(config=SBERT_CONFIG):
     nlp = spacy.load("en_core_web_sm")
@@ -73,25 +73,29 @@ def build_trf_nlp_pipeline(config=SBERT_CONFIG):
     transformer = nlp.add_pipe("transformer", config=SBERT_CONFIG)
     # initialize the transformer model
     try:
-        transformer.model.initialize([nlp.make_doc("Jello world I am here. Hello world.")])
+        transformer.model.initialize(
+            [nlp.make_doc("Jello world I am here. Hello world.")]
+        )
     except ValueError:
-        transformer.model.initialize([nlp.make_doc("Jello world I am here. Hello world.")])
+        transformer.model.initialize(
+            [nlp.make_doc("Jello world I am here. Hello world.")]
+        )
     return nlp
 
 
 class SentenceTextRank:
-    def __init__(self, doc): 
+    def __init__(self, doc):
         self.doc = doc
         self.transformer_ranks = self.trfembeddings_textrank()
         self.wordembedding_ranks = self.wordembeddings_textrank()
         self.sentences = [sent for sent in doc.sents]
 
     def _sentence_rank(self, sentence_vectors):
-        """ Rank sentences by importance.
-        
+        """Rank sentences by importance.
+
         Takes a list of sentence_vectors and computes pair-wise cosine similarity
-        between all sentences. A graph is constructed with the sentence_vectors as 
-        nodes and cosine similarity as edges. 
+        between all sentences. A graph is constructed with the sentence_vectors as
+        nodes and cosine similarity as edges.
         Pagerank algorithm is run on the graph and scores returned.
         """
         cossims = cosine_similarity(sentence_vectors)
@@ -104,7 +108,7 @@ class SentenceTextRank:
     def trfembeddings_textrank(self):
         sentence_vectors = self.get_transformer_embeddings()
         try:
-            return self._sentence_rank(np.array(sentence_vectors.cpu()))  
+            return self._sentence_rank(np.array(sentence_vectors.cpu()))
         except (ValueError, AttributeError):
             return None
 
@@ -122,82 +126,101 @@ class SentenceTextRank:
             # tokens may not exist if document is empty
             return None
         else:
-            attn_mask = self.doc._.trf_data.tokens['attention_mask']
+            attn_mask = self.doc._.trf_data.tokens["attention_mask"]
             return self._mean_pooling(token_embeddings, attn_mask)
 
     def get_sentence_embeddings(self):
         try:
-          # if using spaCy on GPU, convert cupy arr --> numpy arr with get()
-          return [sent.vector.get() for sent in self.doc.sents] 
+            # if using spaCy on GPU, convert cupy arr --> numpy arr with get()
+            return [sent.vector.get() for sent in self.doc.sents]
         except:
-          return [sent.vector for sent in self.doc.sents] 
-    
+            return [sent.vector for sent in self.doc.sents]
+
     def _mean_pooling(self, token_embeddings, attention_mask):
-        """ Take attention mask into account for correct averaging of sentence-bert tokens """
-        # This was adapted from a HuggingFace Model Repo example by the 
+        """Take attention mask into account for correct averaging of sentence-bert tokens"""
+        # This was adapted from a HuggingFace Model Repo example by the
         # Sentence-Transformer team for the model used here:
         # https://huggingface.co/sentence-transformers/paraphrase-mpnet-base-v2
-        input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
-        return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+        input_mask_expanded = (
+            attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
+        )
+        return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(
+            input_mask_expanded.sum(1), min=1e-9
+        )
 
-    def generate_summary(self, *, transformer_ranks=False, limit_sentences=5, preserve_order=True, return_scores=False):
-        """ Generate an extractive summary of the doc. """
+    def generate_summary(
+        self,
+        *,
+        transformer_ranks=False,
+        limit_sentences=5,
+        preserve_order=True,
+        return_scores=False
+    ):
+        """Generate an extractive summary of the doc."""
         if transformer_ranks:
             scores = self.transformer_ranks
         else:
             scores = self.wordembedding_ranks
         if scores:
             # order by rank
-            ranked_sentences = sorted(((scores[i], i, s) for i, s in enumerate(self.sentences)), reverse=True)
+            ranked_sentences = sorted(
+                ((scores[i], i, s) for i, s in enumerate(self.sentences)), reverse=True
+            )
             summary = ranked_sentences[:limit_sentences]
-            if preserve_order: 
+            if preserve_order:
                 # rerank by index in the doc
                 summary = sorted(summary, key=lambda x: x[1])
             if return_scores:
                 return [(s, str(sent)) for s, i, sent in summary]
             else:
                 return " ".join([str(sent) for s, i, sent in summary])
-        return None 
+        return None
 
-def classic_summary(text:str, nlp:Language, **kwargs) -> str:
-    """ Generate summary with classic TextRank model. 
 
-    TextRank model uses PageRank algorithm on word co-ocurrences to 
+def classic_summary(text: str, nlp: Language, **kwargs) -> str:
+    """Generate summary with classic TextRank model.
+
+    TextRank model uses PageRank algorithm on word co-ocurrences to
     determine important phrases. Sentences containing the highest ranked
-    phrases are extracted as the document summary. 
+    phrases are extracted as the document summary.
     """
     doc = nlp(text)
     tr = doc._.textrank
     try:
         summary = []
         for sentence in tr.summary(
-                            limit_phrases=10, 
-                            limit_sentences=NUM_SENTENCES, 
-                            preserve_order=True):
+            limit_phrases=10, limit_sentences=NUM_SENTENCES, preserve_order=True
+        ):
             summary.append(str(sentence))
         return " ".join(summary)
     except:
         return None
 
-def sentence_summary(text:str, nlp:Language, **kwargs) -> str:
-    """ Generate a summary with a TextRank model constructed from sentences.
+
+def sentence_summary(text: str, nlp: Language, **kwargs) -> str:
+    """Generate a summary with a TextRank model constructed from sentences.
 
     This version of TextRank uses the PageRank algorithm on sentence embeddings
-    (constructed from an average of spaCy word embeddings) and cosine similarities 
+    (constructed from an average of spaCy word embeddings) and cosine similarities
     to determine the most important sentences in the document. The highest ranked
-    sentences are extracted as the document summary. 
+    sentences are extracted as the document summary.
     """
     sent_tr = SentenceTextRank(doc)
-    return sent_tr.generate_summary(transformer_ranks=False, limit_sentences=NUM_SENTENCES)
+    return sent_tr.generate_summary(
+        transformer_ranks=False, limit_sentences=NUM_SENTENCES
+    )
 
-def sentence_summary_trf(text:str, nlp:Language, **kwargs) -> str:
-    """ Generate a summary with a TextRank model constructed from sentences.
+
+def sentence_summary_trf(text: str, nlp: Language, **kwargs) -> str:
+    """Generate a summary with a TextRank model constructed from sentences.
 
     This version of TextRank uses the PageRank algorithm on sentence embeddings
-    (constructed SentenceBERT embeddings) and cosine similarities to 
+    (constructed SentenceBERT embeddings) and cosine similarities to
     determine the most important sentences in the document. The highest ranked
-    sentences are extracted as the document summary. 
+    sentences are extracted as the document summary.
     """
     doc = nlp(text)
     sent_tr = SentenceTextRank(doc)
-    return sent_tr.generate_summary(transformer_ranks=True, limit_sentences=NUM_SENTENCES)
+    return sent_tr.generate_summary(
+        transformer_ranks=True, limit_sentences=NUM_SENTENCES
+    )
