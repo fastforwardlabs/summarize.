@@ -59,8 +59,8 @@ MIN_SENTENCE_LENGTH = 14
 nlp = spacy.load('en_core_web_sm') # change to large at some point
 tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL_NAME)
 
-# get mean pooling for sentence bert models 
-# ref https://www.sbert.net/examples/applications/computing-embeddings/README.html#sentence-embeddings-with-transformers
+# This code was adapted from SBERT.net  
+# https://www.sbert.net/examples/applications/computing-embeddings/README.html#sentence-embeddings-with-transformers
 def mean_pooling(model_output, attention_mask):
     token_embeddings = model_output[0] #First element of model_output contains all token embeddings
     input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
