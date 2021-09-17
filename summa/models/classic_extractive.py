@@ -131,9 +131,12 @@ class SentenceTextRank:
           return [sent.vector.get() for sent in self.doc.sents] 
         except:
           return [sent.vector for sent in self.doc.sents] 
-
+    
     def _mean_pooling(self, token_embeddings, attention_mask):
         """ Take attention mask into account for correct averaging of sentence-bert tokens """
+        # This was adapted from a HuggingFace Model Repo example by the 
+        # Sentence-Transformer team for the model used here:
+        # https://huggingface.co/sentence-transformers/paraphrase-mpnet-base-v2
         input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
         return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
