@@ -127,6 +127,7 @@ text_selection = text_options[text_selection]
 # ----- Load Stuff -----
 if text_selection == "wiki":
     df = load_data(text_selection)
+    df.fillna('', inplace=True)
     text_options = {r.heading: i for i, r in df.iterrows()}
     top_left.subheader("Table of Contents")
     selection = top_left.selectbox("Choose a subsection.", list(text_options.keys()))
@@ -153,9 +154,8 @@ bottom_left, bottom_right = st.columns(2)
 bottom_left.markdown(f"## Original text (summary highlighted)")
 
 # ----- Highlighting -----
+snippets = []
 if summary:
-    st.write(summary)
-    st.write(type(summary))
     snippets = match_most_text(summary, text)
 if snippets:
     highlighted_article = highlight_text(snippets, text)
@@ -169,12 +169,13 @@ bottom_right.markdown(f"## {model_obj.display_name} Summary")
 bottom_right.write(f"\n{summary}")
 
 if text == original:
-    with bottom_right.expander('Dig Deeper'):
-        if text_selection == "cnn":
+    if text_selection == "cnn":
+        with bottom_right.expander("Qualitative Comparison"):
             st.write("Because the CNN/Daily Mail dataset includes gold standard summaries, \
                 we can do a quantitative comparison with our model output. The standard approach \
                 is to compute the ROUGE score between the model's output and the gold standard.")
             st.pyplot(make_bar_chart(df, row_idx, model_obj.display_name))
             st.write("There are several flavors of ROUGE score. ROUGE-L considers the longest common subsequence in the summary. ")
-        if text_selection == "wiki":
-            st.write("Interesting things about these Wiki excerpts.")
+    if text_selection == "wiki":
+        with bottom_right.expander("Qualitative Comparison"):
+            st.markdown(df.iloc[row_idx]['commentary'])

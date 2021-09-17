@@ -153,4 +153,5 @@ def summarize(text, model, limit_sentences=NUM_SENTENCES, batch_size=BATCH_SIZE,
 
         if return_scores:
             return summary, scores
-    return ""
+        return summary
+    return None

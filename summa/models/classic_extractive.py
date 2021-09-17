@@ -154,7 +154,7 @@ class SentenceTextRank:
                 return [(s, str(sent)) for s, i, sent in summary]
             else:
                 return " ".join([str(sent) for s, i, sent in summary])
-        return "" 
+        return None 
 
 def classic_summary(text:str, nlp:Language, **kwargs) -> str:
     """ Generate summary with classic TextRank model. 
@@ -165,13 +165,16 @@ def classic_summary(text:str, nlp:Language, **kwargs) -> str:
     """
     doc = nlp(text)
     tr = doc._.textrank
-    summary = []
-    for sentence in tr.summary(
-                        limit_phrases=10, 
-                        limit_sentences=NUM_SENTENCES, 
-                        preserve_order=True):
-        summary.append(str(sentence))
-    return " ".join(summary)
+    try:
+        summary = []
+        for sentence in tr.summary(
+                            limit_phrases=10, 
+                            limit_sentences=NUM_SENTENCES, 
+                            preserve_order=True):
+            summary.append(str(sentence))
+        return " ".join(summary)
+    except:
+        return None
 
 def sentence_summary(text:str, nlp:Language, **kwargs) -> str:
     """ Generate a summary with a TextRank model constructed from sentences.
