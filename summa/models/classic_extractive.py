@@ -154,7 +154,7 @@ class SentenceTextRank:
                 return [(s, str(sent)) for s, i, sent in summary]
             else:
                 return " ".join([str(sent) for s, i, sent in summary])
-        return None 
+        return "" 
 
 def classic_summary(text:str, nlp:Language, **kwargs) -> str:
     """ Generate summary with classic TextRank model. 

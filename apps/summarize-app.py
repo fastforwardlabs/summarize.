@@ -153,7 +153,10 @@ bottom_left, bottom_right = st.columns(2)
 bottom_left.markdown(f"## Original text (summary highlighted)")
 
 # ----- Highlighting -----
-snippets = match_most_text(summary, text)
+if summary:
+    st.write(summary)
+    st.write(type(summary))
+    snippets = match_most_text(summary, text)
 if snippets:
     highlighted_article = highlight_text(snippets, text)
     for paragraph in highlighted_article.split("\n"):
