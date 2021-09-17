@@ -3,7 +3,8 @@ A revamping of the Cloudera Fast Forward Labs Brief application showcasing updat
 
 The primary output of this repository is the **Summarize.** application, a prototype user interface for automatic text summarization. It includes the ability to apply both abstractive and extractive summarization models on various types of documents, including Wikipedia articles, news articles, and fiction book chapters. 
 
-TODO: SCREENSHOT
+![](images/summarize_full_screengrab.png)
+
 
 ## **Summarize.** interface
 Instructions are given both for general use (on a laptop, say), and for Cloudera CML and CDSW. We'll first describe what's here, then go through how to run everything.
