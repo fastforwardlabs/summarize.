@@ -11,16 +11,6 @@ class TextChunk(object):
     ws: str = attr.ib(default="")
 
 
-def wrap_text_in_chunks(text: str, summary: str) -> List[TextChunk]:
-    return [TextChunk(text=text, summary=summary)]
-
-
-def wrap_summary(summary_func):
-    def wrapped_func(text, model) -> List[TextChunk]:
-        return wrap_text_in_chunks(text, summary_func(text, model))
-    return wrapped_func
-
-
 @attr.s()
 class TextFull(object):
     texts: List[TextChunk] = attr.ib()
@@ -32,3 +22,19 @@ class TextFull(object):
             if i == len(self.texts) - 1:
                 result.append(ti.ws)
         return "".join(result)
+
+    def __repr__(self) -> str:
+        return str(self)
+
+    def summary(self) -> str:
+        return " ".join([t.summary for t in self.texts])
+
+
+def wrap_text_in_chunks(text: str, summary: str) -> TextFull:
+    return TextFull(texts=[TextChunk(text=text, summary=summary)])
+
+
+def wrap_summary(summary_func):
+    def wrapped_func(text, model) -> TextFull:
+        return wrap_text_in_chunks(text, summary_func(text, model))
+    return wrapped_func

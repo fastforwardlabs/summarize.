@@ -38,26 +38,50 @@
 #
 # ###########################################################################
 
-import os
-import pathlib
+import unittest
 
-def create_path(pathname: str) -> None:
-    """Creates the directory for the given path if it doesn't already exist."""
-    dir = str(pathlib.Path(pathname).parent)
-    if not os.path.exists(dir):
-        os.makedirs(dir)
+from summa import text_cleanup
 
-def absolute_pathname(*paths) -> str:
-    """Given a path relative to this project's top-level directory, returns the
-    full path in the OS.
-    Args:
-        paths: A list of folders/files.  These will be joined in order with "/"
-            or "\" depending on platform.
-    Returns:
-        The full absolute path in the OS.
-    """
-    # First parent gets the scripts directory, and the second gets the top-level.
-    result_path = pathlib.Path(__file__).resolve().parent.parent
-    for path in paths:
-        result_path /= path
-    return str(result_path)
+ALICE_TEXT = """
+“Perhaps it doesn’t understand English,” thought Alice; “I daresay it’s
+a French mouse, come over with William the Conqueror.” (For, with all
+her knowledge of history, Alice had no very clear notion how long ago
+anything had happened.) So she began again: “Où est ma chatte?” which
+was the first sentence in her French lesson-book. The Mouse gave a
+sudden leap out of the water, and seemed to quiver all over with
+fright. “Oh, I beg your pardon!” cried Alice hastily, afraid that she
+had hurt the poor animal’s feelings. “I quite forgot you didn’t like
+cats.”
+""".replace("\n", " ")
+
+
+class TestMatchMostText(unittest.TestCase):
+    def test_unchanged_normal_text(self):
+        raw_text = ALICE_TEXT
+        expected_text = ALICE_TEXT
+        self.assertEqual(text_cleanup.cleanup(raw_text), expected_text)
+
+    def test_fix_missing_space_period(self):
+        raw_text = ALICE_TEXT.replace(
+            "French lesson-book. The Mouse", "French lesson-book.The Mouse"
+        )
+        expected_text = ALICE_TEXT
+        self.assertEqual(text_cleanup.cleanup(raw_text), expected_text)
+
+    def test_fix_missing_space_exclamation(self):
+        exclaimative = ALICE_TEXT.replace(
+            "anything had happened.)", "anything had happened!"
+        )
+        raw_text = exclaimative.replace(
+            "anything had happened! So she", "anything had happened!So she"
+        )
+        expected_text = exclaimative
+        self.assertEqual(text_cleanup.cleanup(raw_text), expected_text)
+
+    def test_fix_extra_space_period(self):
+        raw_text = ALICE_TEXT.replace(
+            "French lesson-book. The Mouse", "French lesson-book . The Mouse"
+        )
+        expected_text = ALICE_TEXT
+        self.assertEqual(text_cleanup.cleanup(raw_text), expected_text)
+

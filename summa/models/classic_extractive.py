@@ -184,7 +184,7 @@ def sentence_summary(text:str, nlp:Language, **kwargs) -> str:
     sent_tr = SentenceTextRank(doc)
     return sent_tr.generate_summary(transformer_ranks=False, limit_sentences=NUM_SENTENCES)
 
-def sentence_summary_upgrade(text:str, nlp:Language, **kwargs) -> str:
+def sentence_summary_trf(text:str, nlp:Language, **kwargs) -> str:
     """ Generate a summary with a TextRank model constructed from sentences.
 
     This version of TextRank uses the PageRank algorithm on sentence embeddings

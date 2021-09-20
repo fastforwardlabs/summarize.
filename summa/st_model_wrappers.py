@@ -41,43 +41,22 @@
 from typing import List
 
 import attr
-import transformers as trf
 
-from summa.highlighting import highlight_text
-from summa.models.classic_extractive import (
-    SentenceTextRank, 
-    build_classic_nlp_pipeline,
-    build_trf_nlp_pipeline, 
-    classic_summary, 
-    sentence_summary_upgrade
-)
-from summa.models.neural_extractive import (
-    SentenceBertClass, 
-    load_neural_extractive_model,
-    summarize
-)
-from summa.shared_types import (
-    TextChunk,
-    TextFull,
-    wrap_text_in_chunks,
-    wrap_summary
-)
-
-# this is the current default when loading the HF summarization pipeline
-# making it explicit here to reduce ambiguity.
-ABSUM_MODEL = "sshleifer/distilbart-cnn-12-6" 
-
+from summa.models import neural_extractive as ne
+from summa.models import neural_abstractive as na
+from summa.models import classic_extractive as ce
+from summa.shared_types import wrap_summary
 
 
 @attr.s()
 class SummarizationModel(object):
     """
-    Wrapper class for a summarization model for use in the ReBrief Streamlit app.
+    Wrapper class for a summarization model for use in the Summarize. Streamlit app.
 
     This wrapper class is designed to abstract away the complexities of juggling
-    multiple different summarization models in the ReBrief Streamlit app.  
+    multiple different summarization models in the Summarize. Streamlit app.  
     The load and summarize methods should point to functions that will be called during 
-    execution of the ReBrief app. These functions are designed to operate independently
+    execution of the Summarize. app. These functions are designed to operate independently
     so that loading and summarizing functionality can be cached separately in the 
     Streamlit app. This is also why this class does not store the actual model object, 
     once loaded. 
@@ -116,44 +95,10 @@ class SummarizationModel(object):
         return self.name
 
 
-def load_abstractive_model(model_name = ABSUM_MODEL):
-    return trf.pipeline("summarization", model=model_name, tokenizer=model_name)
-
-def abstractive_summary(text, model) -> TextFull:
-    try:
-        output = model(text, return_tensors=False, clean_up_tokenization_spaces=True)
-        summary = output[0]['summary_text']
-        return wrap_text_in_chunks(text, summary)
-    except IndexError:
-        # the input text is too long. Need to break it up. 
-        pass
-
-    paragraphs = text.split("\n")
-    paragraphs = [p for p in paragraphs if p]
-    chunks = []
-    for paragraph in paragraphs:
-        try:
-            output = model(paragraph, return_tensors=False, clean_up_tokenization_spaces=True)
-            new_summary = output[0]['summary_text']
-            chunks.append(TextChunk(text=paragraph, summary=new_summary, ws="\n"))
-        except IndexError:
-            # if a paragraph is STILL too long, split further
-            sentences = paragraph.split(".") 
-            # TODO: need to generalize this because these chunks might be too long
-            num_chunks = 2 
-            segment_size = int(len(sentences)/num_chunks)
-            while sentences:
-                segment = ". ".join(sentences[:segment_size])
-                sentences = sentences[segment_size:]
-                output = model(segment, return_tensors=False, clean_up_tokenization_spaces=True)
-                new_summary = output[0]['summary_text']
-                chunks.append(TextChunk(text=segment, summary=new_summary, ws=(". " if sentences else "\n")))
-    return TextFull(texts=chunks)
-
 abstractive = SummarizationModel(
     name = "abstractive",
-    load = load_abstractive_model,
-    summarize = abstractive_summary,
+    load = na.load_abstractive_model,
+    summarize = na.abstractive_summary,
     display_name = "Neural Abstractive",
     description = "HuggingFace Summarization Pipeline.\n\n HuggingFace \
     provide models that perform _abstractive_ summarization. \
@@ -173,8 +118,8 @@ abstractive = SummarizationModel(
 
 modern_extractive = SummarizationModel(
     name = "modern_extractive",
-    load = load_neural_extractive_model,
-    summarize = wrap_summary(summarize),
+    load = ne.load_neural_extractive_model,
+    summarize = wrap_summary(ne.summarize),
     display_name = "Neural Extractive",
     description = "Fine-tuning SentenceBERT.\n\n For this model \
     we train a Transformer to perform _extractive_ rather than _abstractive_ summarization. \
@@ -194,8 +139,8 @@ modern_extractive = SummarizationModel(
 
 classic_extractive = SummarizationModel(
     name = "classic_extractive",
-    load = build_classic_nlp_pipeline,
-    summarize = wrap_summary(classic_summary),
+    load = ce.build_classic_nlp_pipeline,
+    summarize = wrap_summary(ce.classic_summary),
     display_name = "Classic Extractive",
     description = "TextRank.\n\n TextRank is a classic graph-based ranking \
     algorithm that computes the importance of a vertex given global information \
@@ -215,13 +160,13 @@ classic_extractive = SummarizationModel(
     and sentences containing the top phrases are extracted as a summary.",
 )
 
-upgraded_classic_extractive = SummarizationModel(
+hybrid_extractive = SummarizationModel(
     name = "hybrid_extractive",
-    load = build_trf_nlp_pipeline,
-    summarize = wrap_summary(sentence_summary_upgrade),
+    load = ce.build_trf_nlp_pipeline,
+    summarize = wrap_summary(ce.sentence_summary),
     display_name = "Hybrid Extractive",
     description = "TextRank + SentenceBERT.\n\n This hybrid approach relies on the \
-    same basic tenents of the \"Classic Extractive\" model but with a twist.\
+    same basic tenets of the \"Classic Extractive\" model but with a twist.\
     \n\n We still use TextRank to build a graph, but now each vertex represents a sentence \
     from the document, rather than a single word. A numerical representation of each sentence is \
     computed via the SentenceBERT Transformer model. The edges of the graph are then initialized \

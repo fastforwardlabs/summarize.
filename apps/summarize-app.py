@@ -44,13 +44,13 @@ import wikipedia as wiki
 import streamlit as st
 st.set_page_config(layout="wide")
 
-from rebrief.wiki_processing import extract_headings
-from rebrief.highlighting import match_most_text, highlight_text
-from rebrief.st_model_wrappers import (
+from summa.wiki_parsing import cleanup, extract_headings
+from summa.highlighting import match_most_text, highlight_text
+from summa.st_model_wrappers import (
     abstractive, 
     modern_extractive, 
     classic_extractive, 
-    upgraded_classic_extractive
+    hybrid_extractive
 )
 
 CHROMEDRIVER_PATH = '/Users/mbeck/Projects/chromedriver'
@@ -60,7 +60,7 @@ MODELS = (
     abstractive,
     modern_extractive,
     classic_extractive,
-    upgraded_classic_extractive
+    hybrid_extractive
 )
 
 # Global versions for caching
@@ -122,6 +122,7 @@ else:
     article = wiki_page.section(section_selection).strip()
 
 text = top_right.text_area("Subection text -- or enter your own text to summarize!", article, height=350)
+text = cleanup(text)
 
 # ----- Summarize Text -----
 all_text = summarize_text(text, model_obj)
@@ -142,5 +143,5 @@ for paragraph in str(all_text).split("\n"):
 
 # ----- Results -----
 bottom_right.markdown(f"## {model_obj.display_name} Summary")
-bottom_right.write(f"\n{summary}")
+bottom_right.write(f"\n{all_text.summary()}")
 
