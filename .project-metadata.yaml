@@ -22,19 +22,19 @@ tasks:
     memory: 4
     environment:
       TASK_TYPE: CREATE/RUN_JOB
-    kernel: python3
+    kernel: python
 
   - type: run_job
     entity_label: install_dependencies
     short_summary: Running install dependencies job. 
 
-  - type: start_application
-    short_summary: Starting Summarize. application 
-    name: Summarize.
-    subdomain: summa
-    script: apps/launch-summarize-app.py
-    environment_variables:
-      TASK_TYPE: START_APPLICATION
-    kernel: python3
-    cpu: 2
-    memory: 4
+#  - type: start_application
+#    short_summary: Starting Summarize. application 
+#    name: Summarize.
+#    subdomain: summa
+#    script: apps/launch-summarize-app.py
+#    environment_variables:
+#      TASK_TYPE: START_APPLICATION
+#    kernel: python3
+#    cpu: 2
+#    memory: 4
