@@ -69,7 +69,7 @@ The application can also be launched programatically as an Application in Cloude
 ## Deploying on CML
 There are three ways to launch this project on CML:
 
-* **From Prototype Catalog** - Navigate to the Prototype Catalog on a CML workspace, select the "Automated Text Summarization" tile, click "Launch as Project", click "Configure Project"
-* **As ML Prototype** - In a CML workspace, click "New Project", add a Project Name, select "ML Prototype" as the Initial Setup option, copy in the [repo URL](LINK), click "Create Project", click "Configure Project"
+* **From Prototype Catalog** - Navigate to the Prototype Catalog on a CML workspace, select the "Summarize." tile, click "Launch as Project", click "Configure Project"
+* **As ML Prototype** - In a CML workspace, click "New Project", add a Project Name, select "AMPs" as the Initial Setup option, copy in the [repo URL](LINK), click "Create Project", click "Configure Project"
 * **Manual Setup** - In a CML workspace, click "New Project", add a Project Name, select "Git" as the Initial Setup option, copy in the [repo URL](LINK), click "Create Project". Then, follow the installation instructions above.
 
