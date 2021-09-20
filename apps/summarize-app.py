@@ -116,7 +116,7 @@ text_options = {
     'Excerpts from Wikipedia page on Machine Learning': "wiki",
     'Articles from the CNN/Daily News dataset': "cnn",
 }
-text_selection = top_left.selectbox("Choose a passage to summarize.", list(text_options.keys()))
+text_selection = top_left.selectbox("Choose a dataset.", list(text_options.keys()))
 text_selection = text_options[text_selection]
 
 # ----- Load Stuff -----
@@ -125,7 +125,7 @@ if text_selection == "wiki":
     df.fillna('', inplace=True)
     text_options = {r.heading: i for i, r in df.iterrows()}
     top_left.subheader("Table of Contents")
-    selection = top_left.selectbox("Choose a subsection.", list(text_options.keys()))
+    selection = top_left.selectbox("Choose an excerpt to summarize.", list(text_options.keys()))
 else:
     df = load_data(text_selection)
     text_options = {r.title: i for i, r in df.iterrows()}
@@ -172,5 +172,5 @@ if text == original:
             st.pyplot(make_bar_chart(df, row_idx, model_obj.display_name))
             st.write("There are several flavors of ROUGE score. ROUGE-L considers the longest common subsequence in the summary. ")
     if text_selection == "wiki":
-        with bottom_right.expander("Qualitative Comparison"):
+        with bottom_right.expander("Quantitative Comparison"):
             st.markdown(df.iloc[row_idx]['commentary'])

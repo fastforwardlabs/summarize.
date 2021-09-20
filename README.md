@@ -1,7 +1,7 @@
 # **Summarize.**
 A revamping of the Cloudera Fast Forward Labs Brief application showcasing updated methodology for extractive and abstractive text summarization. 
 
-The primary output of this repository is the **Summarize.** application, a prototype user interface for automatic text summarization. It includes the ability to apply both abstractive and extractive summarization models on various types of documents, including Wikipedia articles, news articles, and fiction book chapters. 
+The primary output of this repository is the **Summarize.** application, a prototype user interface for automatic text summarization. It includes the ability to apply both abstractive and extractive summarization models on various types of documents, from excerpts of Wikipedia to news articles. Users can also input their own text to summarize. 
 
 ![](images/summarize_full_screengrab.png)
 
@@ -34,7 +34,6 @@ summa
 │   ├── neural_abstractive.py
 │   └── neural_extractive.py
 ├── highlighting.py
-├── wiki_parsing.py
 └── utils.py
 ```
 
@@ -47,7 +46,7 @@ The code and applications within were developed against Python 3.8.0., and are l
 To install dependencies, first create and activate a new virtual environment through your preferred means, then pip install from the requirements file. We recommend:
 
 ```
-python3 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python -m spacy download en_core_web_sm
