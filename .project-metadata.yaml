@@ -28,6 +28,22 @@ tasks:
     entity_label: install_dependencies
     short_summary: Running install dependencies job. 
 
+  - type: create_job
+    name: Download spacy model 
+    entity_label: download_models
+    script: cml/download_spacy_model.py
+    arguments: None
+    short_summary: Create job to download spacy model.
+    cpu: 2
+    memory: 4
+    environment:
+      TASK_TYPE: CREATE/RUN_JOB
+    kernel: python
+
+  - type: run_job
+    entity_label: download_models
+    short_summary: Running install dependencies job.
+
 #  - type: start_application
 #    short_summary: Starting Summarize. application 
 #    name: Summarize.
