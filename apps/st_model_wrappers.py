@@ -75,9 +75,9 @@ class SummarizationModel(object):
                     return model(document)[0]['summary_text'] 
 
     display_name    (str) longer/more detailed description for display in the model selection 
-                    box of the ReBrief Streamlit app
+                    box of Summarize. 
     description     (str) Description of the model for display under the model selection box 
-                    in the ReBrief Streamlit app
+                    in Summarize. 
 
     __hash__    For Streamlit cacheing 
     """

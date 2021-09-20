@@ -42,6 +42,18 @@ import os
 import pathlib
 
 
+def cleanup(txt: str) -> str:
+    """Contains a function to cleanup text following wiki parsing.
+
+    Covered cases are shown in the test file.
+    """
+    supported_punctuation = ".,!?"
+    for c in supported_punctuation:
+        txt = txt.replace(f" {c} ", f"{c} ")
+    # Put a little space in.
+    return re.sub(r"([" + supported_punctuation + r"])([A-Z])", r"\1 \2", txt)
+    
+
 def create_path(pathname: str) -> None:
     """Creates the directory for the given path if it doesn't already exist."""
     dir = str(pathlib.Path(pathname).parent)

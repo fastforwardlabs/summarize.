@@ -44,7 +44,7 @@ import wikipedia as wiki
 import streamlit as st
 st.set_page_config(layout="wide")
 
-from summa.wiki_parsing import extract_headings, cleanup
+from summa.utils import cleanup
 from summa.highlighting import match_most_text, highlight_text
 
 from st_model_wrappers import (
@@ -77,11 +77,6 @@ def load_data(selection):
         return pd.read_csv("data/wikipedia/ml_excerpts.pd")
     elif selection == "cnn":
         return pd.read_csv("data/cnn_dailymail/sAMPle.pd")
-
-def make_url(text, url):
-    """ Add HTML to convert text into a clickable url. """
-    new_text = f'<a target="_blank" href="{url}">{text}</a>'
-    return new_text
 
 def make_bar_chart(df, idx, model_name):
     labels = ['Neural Abstractive', 'Neural Extractive', 'Classic Extractive', 'Hybrid Extractive']
