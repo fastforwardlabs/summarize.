@@ -113,7 +113,7 @@ modern_extractive = SummarizationModel(
     those that _should not._  At inference time, the model assigns each \
     sentence a score and we select the top three as the article summary. \
     \n\n Details on the training process can be found in our blog post, [Extractive \
-    Summarization with SentenceBERT](TODO: LINK).",
+    Summarization with SentenceBERT](https://blog.fastforwardlabs.com/2021/09/21/extractive-summarization-with-sentence-bert.html).",
 )
 
 classic_extractive = SummarizationModel(

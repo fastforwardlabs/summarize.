@@ -95,7 +95,7 @@ def make_bar_chart(df, idx, model_name):
 st.sidebar.image("images/fflogo1@1x.png")
 st.sidebar.markdown("**Summarize.** is a text summarization prototype that demonstrates \
     _abstractive_ and _extractive_ summarization, and showcases Transformer-based models \
-    as well as classic and hybrid models. Read more on our [blog.](TODO: LINK).")
+    as well as classic and hybrid models. Read more on our [blog](https://blog.fastforwardlabs.com/2021/09/22/automatic-summarization-from-textrank-to-transformers.html).")
 
 # ----- Model Selection -----
 model_selector = {m.display_name: m for m in MODELS}

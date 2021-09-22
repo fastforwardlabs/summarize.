@@ -35,7 +35,7 @@ summa
 └── utils.py
 ```
 
-This small library includes functionality to support the **Summarize.** application. The bulk of the library is in the `models` subdirectory, wherein we support four types of summarization models. The details on these models can be found in this [related blog post](LINK). The `classic_extractive.py` file supports both the classic TextRank method, as well as a hybrid Transformers+TextRank model. 
+This small library includes functionality to support the **Summarize.** application. The bulk of the library is in the `models` subdirectory, wherein we support four types of summarization models. The details on these models can be found in this [related blog post](https://blog.fastforwardlabs.com/2021/09/22/automatic-summarization-from-textrank-to-transformers.html). The `classic_extractive.py` file supports both the classic TextRank method, as well as a hybrid Transformers+TextRank model. 
 
 
 ## Installation
